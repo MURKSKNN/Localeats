@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LocalEats 🍜</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111008;--topbar:rgba(14,11,4,0.97);--chip-bg:rgba(22,18,8,0.92);
+  --border:rgba(255,255,255,0.09);--orange:#F97316;--gold:#EAB308;--green:#22C55E;
+  --red:#EF4444;--text:#F5F0E8;--muted:rgba(245,240,232,0.42);--panel:rgba(12,9,3,0.98);
+}
+body{font-family:'Sarabun','Noto Sans SC','Noto Sans KR','Noto Sans JP',sans-serif;
+  background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+
+/* MAP */
+#map{position:absolute;inset:0;z-index:0}
+.leaflet-tile-pane{filter:brightness(0.28) saturate(0.3)}
+
+/* TOP BAR */
+#topbar{
+  position:absolute;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;gap:8px;padding:9px 13px;
+  background:var(--topbar);border-bottom:1px solid var(--border);
+}
+#logo{display:flex;align-items:center;gap:7px;font-size:18px;font-weight:800;
+  color:var(--text);white-space:nowrap;flex-shrink:0;letter-spacing:-.3px}
+.logo-icon{width:31px;height:31px;border-radius:9px;background:var(--orange);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+#search-wrap{position:relative;flex:1}
+#search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:13px;pointer-events:none}
+#searchbox{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);
+  border-radius:9px;padding:7px 12px 7px 33px;color:var(--text);
+  font-size:13px;outline:none;font-family:inherit}
+#searchbox::placeholder{color:var(--muted)}
+#searchbox:focus{border-color:rgba(249,115,22,.4);background:rgba(255,255,255,.08)}
+
+/* LANG BUTTON */
+#lang-btn{
+  display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.06);
+  border:1px solid var(--border);border-radius:9px;padding:6px 9px;
+  color:var(--text);font-size:13px;font-weight:600;cursor:pointer;
+  flex-shrink:0;font-family:inherit;transition:all .15s;white-space:nowrap;
+}
+#lang-btn:hover{background:rgba(255,255,255,.1)}
+#lang-btn .lf{font-size:15px;line-height:1}
+#lang-btn .chev{font-size:8px;color:var(--muted);transition:transform .18s}
+#lang-btn.open .chev{transform:rotate(180deg)}
+
+/* LANG DROPDOWN */
+#lang-dd{
+  position:absolute;top:52px;right:13px;z-index:800;
+  background:rgba(14,11,4,.98);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:13px;padding:5px;min-width:168px;
+  transform:translateY(-5px) scale(.96);transform-origin:top right;
+  opacity:0;pointer-events:none;transition:all .2s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.65);
+}
+#lang-dd.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.lo{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;transition:background .12s}
+.lo:hover{background:rgba(255,255,255,.07)}
+.lo.active{background:rgba(249,115,22,.12)}
+.lo-flag{font-size:17px;line-height:1;flex-shrink:0}
+.lo-name{font-size:13px;font-weight:600;color:var(--text)}
+.lo-native{font-size:10px;color:var(--muted)}
+.lo-chk{margin-left:auto;color:var(--orange);font-size:13px;font-weight:800}
+
+/* ADD BUTTON */
+#add-btn{
+  background:var(--orange);border:none;border-radius:9px;padding:7px 14px;
+  color:#fff;font-weight:800;font-size:13px;font-family:inherit;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;transition:background .15s,transform .12s;
+  display:flex;align-items:center;gap:5px;
+}
+#add-btn:hover{background:#ea6505;transform:scale(1.03)}
+
+/* CAT BAR */
+#catbar{
+  position:absolute;top:51px;left:0;right:0;z-index:499;
+  display:flex;gap:6px;padding:7px 13px;overflow-x:auto;scrollbar-width:none;
+  background:var(--topbar);border-bottom:1px solid var(--border);
+}
+#catbar::-webkit-scrollbar{display:none}
+.cat-chip{
+  display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;
+  white-space:nowrap;font-size:12px;font-weight:500;cursor:pointer;flex-shrink:0;
+  border:1px solid var(--border);background:var(--chip-bg);color:var(--muted);transition:all .15s;
+}
+.cat-chip.active{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:700}
+.cat-chip:hover:not(.active){border-color:rgba(249,115,22,.3);color:var(--text)}
+.cc-count{background:rgba(255,255,255,.11);border-radius:5px;padding:0 5px;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.65)}
+.cat-chip.active .cc-count{background:rgba(0,0,0,.2);color:#fff}
+
+/* PRICE BAR */
+#pricebar{
+  position:absolute;top:100px;left:0;right:0;z-index:498;
+  display:flex;gap:6px;padding:6px 13px;overflow-x:auto;scrollbar-width:none;
+  background:linear-gradient(180deg,rgba(14,11,4,.55) 0%,transparent 100%);
+}
+#pricebar::-webkit-scrollbar{display:none}
+.price-chip{
+  display:flex;align-items:center;gap:4px;padding:4px 11px;border-radius:7px;
+  white-space:nowrap;font-size:12px;font-weight:500;cursor:pointer;flex-shrink:0;
+  border:1px solid rgba(34,197,94,.2);background:rgba(14,11,4,.82);
+  color:rgba(134,239,172,.75);transition:all .15s;
+}
+.price-chip.active{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+.price-chip:hover:not(.active){border-color:rgba(34,197,94,.45);color:#86efac}
+
+/* PRICE DRAWER */
+#price-drawer{
+  position:absolute;top:137px;left:12px;right:12px;z-index:497;
+  background:rgba(14,11,4,.97);backdrop-filter:blur(20px);
+  border:1px solid rgba(34,197,94,.16);border-radius:13px;padding:14px;
+  transform:translateY(-6px) scaleY(.92);transform-origin:top;
+  opacity:0;pointer-events:none;transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+#price-drawer.open{transform:translateY(0) scaleY(1);opacity:1;pointer-events:all}
+.dlbl{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;margin-bottom:8px}
+.range-row{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.range-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(34,197,94,.2);
+  border-radius:8px;padding:7px 9px;color:#fff;font-size:13px;font-family:inherit;
+  outline:none;text-align:center}
+.range-input:focus{border-color:rgba(34,197,94,.5)}
+.presets-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px}
+.preset-btn{padding:4px 11px;border-radius:7px;font-size:11px;cursor:pointer;
+  border:1px solid rgba(34,197,94,.18);background:rgba(34,197,94,.06);
+  color:#86efac;font-family:inherit;font-weight:600;transition:all .12s}
+.preset-btn:hover{background:rgba(34,197,94,.15)}
+.apply-btn{width:100%;padding:8px;background:var(--green);border:none;
+  border-radius:8px;color:#fff;font-weight:700;font-size:13px;font-family:inherit;cursor:pointer}
+
+/* MARKERS */
+.food-marker{width:34px;height:34px;border-radius:50% 50% 50% 0;background:var(--orange);
+  transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(249,115,22,.55);cursor:pointer;
+  border:2px solid rgba(255,255,255,.25);transition:transform .18s}
+.food-marker:hover{transform:rotate(-45deg) scale(1.18)}
+.food-marker .inner{transform:rotate(45deg);font-size:15px;line-height:1}
+.food-marker.selected{background:#fff;
+  box-shadow:0 0 0 3px var(--orange),0 4px 18px rgba(249,115,22,.6)}
+.user-dot{width:18px;height:18px;border-radius:50%;background:var(--orange);
+  border:3px solid #fff;box-shadow:0 0 0 4px rgba(249,115,22,.3);
+  animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 4px rgba(249,115,22,.3)}50%{box-shadow:0 0 0 9px rgba(249,115,22,.08)}}
+
+/* GPS BUTTON */
+#gps-btn{
+  position:absolute;right:12px;bottom:82px;z-index:491;width:44px;height:44px;
+  border-radius:12px;border:1px solid var(--border);cursor:pointer;
+  background:rgba(14,11,4,.92);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;transition:all .18s;box-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+#gps-btn:hover{border-color:rgba(249,115,22,.45);transform:scale(1.07)}
+#gps-btn.active{background:rgba(249,115,22,.15);border-color:var(--orange);
+  box-shadow:0 0 0 3px rgba(249,115,22,.2)}
+#gps-btn.loading{animation:gspin 1s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+
+/* NEARBY BANNER */
+#nearby-banner{
+  position:absolute;top:138px;left:12px;right:12px;z-index:496;
+  background:rgba(14,11,4,.95);backdrop-filter:blur(16px);
+  border:1px solid rgba(249,115,22,.3);border-radius:12px;
+  transform:translateY(-6px) scaleY(.92);transform-origin:top;
+  opacity:0;pointer-events:none;transition:all .22s cubic-bezier(.4,0,.2,1);
+}
+#nearby-banner.open{transform:translateY(0) scaleY(1);opacity:1;pointer-events:all}
+#nb-inner{padding:12px 14px}
+.nb-title{font-size:12px;font-weight:700;color:var(--orange);letter-spacing:.4px;
+  text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.nb-close{margin-left:auto;background:none;border:none;color:var(--muted);
+  font-size:14px;cursor:pointer;padding:0}
+.r-chips{display:flex;gap:6px;flex-wrap:wrap}
+.r-chip{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;
+  border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.06);
+  color:rgba(253,186,116,.8);font-family:inherit;transition:all .14s}
+.r-chip.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.nb-result{margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.nb-clear{margin-left:auto;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;font-family:inherit;transition:all .13s}
+.nb-clear:hover{background:rgba(255,255,255,.1);color:var(--text)}
+
+/* STATS PILL */
+#stats-pill{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  z-index:490;display:flex;align-items:center;gap:16px;
+  background:rgba(14,11,4,.9);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:40px;padding:9px 20px;
+  box-shadow:0 4px 24px rgba(0,0,0,.6);transition:opacity .25s,transform .25s;
+  white-space:nowrap;
+}
+#stats-pill.hidden{opacity:0;transform:translateX(-50%) translateY(8px);pointer-events:none}
+.ss{display:flex;align-items:center;gap:5px}
+.ss-val{font-weight:800;font-size:14px}
+.ss-lbl{font-size:12px;color:var(--muted)}
+.sdiv{width:1px;height:15px;background:rgba(255,255,255,.1)}
+
+/* MINI LIST */
+#mini-list{position:absolute;top:148px;right:12px;z-index:490;
+  width:190px;max-height:calc(100vh - 220px);overflow-y:auto;scrollbar-width:none}
+#mini-list::-webkit-scrollbar{display:none}
+.mc{background:rgba(14,11,4,.88);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:11px;
+  padding:10px 11px;margin-bottom:7px;cursor:pointer;transition:all .18s}
+.mc:hover{background:rgba(24,18,6,.97);border-color:rgba(249,115,22,.3);transform:translateX(-3px)}
+.mc-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3}
+.mc-cat{font-size:10px;color:var(--muted);margin-bottom:4px}
+.mc-row{display:flex;justify-content:space-between;align-items:center}
+.mc-stats{font-size:10px;color:var(--orange)}
+.mc-price{font-size:10px;font-weight:700;color:var(--green)}
+
+/* PANEL */
+#panel{position:absolute;bottom:0;left:0;right:0;z-index:600;max-height:62vh;
+  overflow-y:auto;background:var(--panel);border-top:1px solid var(--border);
+  border-radius:20px 20px 0 0;transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#panel.open{transform:translateY(0)}
+#pdrag{width:36px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin:12px auto 0}
+#pin{padding:13px 16px 36px}
+#pclose{float:right;background:rgba(255,255,255,.07);border:none;border-radius:7px;
+  width:28px;height:28px;color:var(--muted);font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.pname{font-size:18px;font-weight:800;color:var(--text);margin-bottom:3px;line-height:1.25}
+.paddr{color:var(--muted);font-size:12px;margin-bottom:9px}
+.badge-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.bdg{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}
+.bdg.or{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.25);color:var(--orange)}
+.bdg.gr{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.22);color:var(--green)}
+.bdg.go{background:rgba(234,179,8,.1);border-color:rgba(234,179,8,.22);color:var(--gold)}
+.gml{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;
+  margin-bottom:13px;background:rgba(66,133,244,.1);border:1px solid rgba(66,133,244,.22);
+  border-radius:9px;color:#7eb3ff;text-decoration:none;font-size:12px;font-weight:600}
+.rvhdr{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.4px;
+  text-transform:uppercase;margin-bottom:9px;padding-bottom:7px;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+.rvc{background:rgba(255,255,255,.03);border-radius:10px;padding:11px;
+  margin-bottom:8px;border-left:2px solid rgba(234,179,8,.4)}
+.rvtop{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.rvav{width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--orange),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:13px}
+.rvname{font-size:12px;font-weight:700;color:var(--text)}
+.rvdate{font-size:10px;color:var(--muted)}
+.rvtxt{font-size:13px;line-height:1.6;color:rgba(245,240,232,.8)}
+.rvimg{width:100%;border-radius:7px;margin-top:7px;max-height:140px;object-fit:cover}
+.rvtags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.tag{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.16);
+  color:var(--gold);border-radius:5px;padding:2px 6px;font-size:10px;font-weight:600}
+.wrv-btn{width:100%;margin-top:4px;padding:10px;
+  background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);
+  border-radius:9px;color:var(--muted);font-size:13px;font-weight:600;
+  font-family:inherit;cursor:pointer;transition:all .15s}
+.wrv-btn:hover{background:rgba(255,255,255,.06);color:var(--text)}
+
+/* MODAL */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(12px);
+  z-index:2000;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .22s}
+#modal-overlay.open{opacity:1;pointer-events:all}
+#modal{background:#0d0a04;border:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:20px 17px 40px;
+  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  transform:translateY(28px);transition:transform .28s cubic-bezier(.4,0,.2,1);position:relative}
+#modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:20px 20px 0 0;background:linear-gradient(90deg,var(--orange),var(--gold))}
+#modal-overlay.open #modal{transform:translateY(0)}
+.mhandle{width:34px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin:0 auto 16px}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.mtitle{font-size:16px;font-weight:800;color:var(--text)}
+.mclose{background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:8px;padding:5px 9px;color:var(--muted);font-size:15px;cursor:pointer}
+.flbl{display:block;font-size:11px;font-weight:700;color:var(--muted);
+  letter-spacing:.4px;text-transform:uppercase;margin-bottom:5px}
+.fi{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:9px;padding:9px 11px;color:var(--text);font-size:13px;
+  font-family:inherit;outline:none;margin-bottom:12px}
+.fi:focus{border-color:rgba(249,115,22,.45);background:rgba(255,255,255,.07)}
+textarea.fi{resize:none}
+select.fi{background:#0d0a04}
+.pr-row{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.pr-row .fi{margin-bottom:0;flex:1;text-align:center}
+.pq-grid{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.pqb{padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;
+  border:1px solid rgba(34,197,94,.22);background:rgba(34,197,94,.06);
+  color:#86efac;font-family:inherit;font-weight:600;transition:all .12s}
+.pqb:hover{background:rgba(34,197,94,.14)}
+.img-zone{border:2px dashed rgba(255,255,255,.1);border-radius:10px;padding:17px;
+  text-align:center;cursor:pointer;background:rgba(255,255,255,.02);
+  margin-bottom:12px;transition:all .15s}
+.img-zone:hover{border-color:rgba(249,115,22,.35)}
+.img-preview{width:100%;border-radius:7px;max-height:130px;object-fit:cover}
+.sbtn{width:100%;padding:12px;background:var(--orange);border:none;border-radius:10px;
+  color:#fff;font-weight:800;font-size:14px;font-family:inherit;
+  cursor:pointer;transition:background .15s,transform .12s}
+.sbtn:hover:not(:disabled){background:#ea6505;transform:translateY(-1px)}
+.sbtn:disabled{opacity:.45;cursor:not-allowed}
+.sbtn.checking{background:rgba(249,115,22,.3);pointer-events:none;
+  animation:cpulse .9s ease-in-out infinite}
+@keyframes cpulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* MODERATION TOAST */
+#mod-toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(18px);
+  z-index:3000;max-width:340px;width:calc(100% - 28px);
+  background:#1a0808;border:1px solid rgba(239,68,68,.45);border-radius:13px;
+  padding:13px 15px;display:flex;gap:11px;align-items:flex-start;
+  opacity:0;pointer-events:none;transition:all .26s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+}
+#mod-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:all}
+.ti{font-size:21px;flex-shrink:0;line-height:1}
+.tt-title{font-size:13px;font-weight:800;color:#fca5a5;margin-bottom:2px}
+.tt-msg{font-size:12px;color:rgba(252,165,165,.72);line-height:1.5}
+.tc{margin-left:auto;flex-shrink:0;background:none;border:none;
+  color:rgba(252,165,165,.45);font-size:16px;cursor:pointer;padding:0 0 0 7px}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+@media(max-width:600px){#mini-list{display:none}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div id="logo"><div class="logo-icon">🍜</div>LocalEats</div>
+  <div id="search-wrap">
+    <span id="search-icon">🔍</span>
+    <input id="searchbox" type="text" oninput="filterMarkers()"/>
+  </div>
+  <button id="lang-btn" onclick="toggleLangDD()">
+    <span class="lf" id="cur-flag">🇹🇭</span>
+    <span class="chev">▼</span>
+  </button>
+  <button id="add-btn" onclick="openModal('new')">
+    <span>+</span><span id="btn-post">โพส</span>
+  </button>
+</div>
+
+<!-- LANG DROPDOWN -->
+<div id="lang-dd">
+  <div class="lo active" onclick="setLang('th')" id="lo-th"><span class="lo-flag">🇹🇭</span><div><div class="lo-name">Thai</div><div class="lo-native">ภาษาไทย</div></div><span class="lo-chk" id="lc-th">✓</span></div>
+  <div class="lo" onclick="setLang('en')" id="lo-en"><span class="lo-flag">🇬🇧</span><div><div class="lo-name">English</div><div class="lo-native">English</div></div><span class="lo-chk" id="lc-en" style="display:none">✓</span></div>
+  <div class="lo" onclick="setLang('zh')" id="lo-zh"><span class="lo-flag">🇨🇳</span><div><div class="lo-name">Chinese</div><div class="lo-native">中文</div></div><span class="lo-chk" id="lc-zh" style="display:none">✓</span></div>
+  <div class="lo" onclick="setLang('ko')" id="lo-ko"><span class="lo-flag">🇰🇷</span><div><div class="lo-name">Korean</div><div class="lo-native">한국어</div></div><span class="lo-chk" id="lc-ko" style="display:none">✓</span></div>
+  <div class="lo" onclick="setLang('ja')" id="lo-ja"><span class="lo-flag">🇯🇵</span><div><div class="lo-name">Japanese</div><div class="lo-native">日本語</div></div><span class="lo-chk" id="lc-ja" style="display:none">✓</span></div>
+  <div class="lo" onclick="setLang('es')" id="lo-es"><span class="lo-flag">🇪🇸</span><div><div class="lo-name">Spanish</div><div class="lo-native">Español</div></div><span class="lo-chk" id="lc-es" style="display:none">✓</span></div>
+  <div class="lo" onclick="setLang('ru')" id="lo-ru"><span class="lo-flag">🇷🇺</span><div><div class="lo-name">Russian</div><div class="lo-native">Русский</div></div><span class="lo-chk" id="lc-ru" style="display:none">✓</span></div>
+</div>
+
+<!-- CAT BAR -->
+<div id="catbar"></div>
+
+<!-- PRICE BAR -->
+<div id="pricebar">
+  <div class="price-chip active" id="pc-all"    onclick="setPricePreset('all')"></div>
+  <div class="price-chip"        id="pc-budget" onclick="setPricePreset('budget')"></div>
+  <div class="price-chip"        id="pc-low"    onclick="setPricePreset('low')"></div>
+  <div class="price-chip"        id="pc-mid"    onclick="setPricePreset('mid')"></div>
+  <div class="price-chip"        id="pc-high"   onclick="setPricePreset('high')"></div>
+  <div class="price-chip"        id="pc-custom" onclick="togglePriceDrawer()"></div>
+</div>
+
+<!-- PRICE DRAWER -->
+<div id="price-drawer">
+  <div class="dlbl" id="dl-range"></div>
+  <div class="range-row">
+    <input class="range-input" id="price-min" type="number" min="0"/>
+    <span style="color:var(--muted)">—</span>
+    <input class="range-input" id="price-max" type="number" min="0"/>
+    <span style="color:var(--muted);font-size:12px" id="dl-unit"></span>
+  </div>
+  <div class="dlbl" id="dl-quick"></div>
+  <div class="presets-grid" id="preset-grid"></div>
+  <button class="apply-btn" id="apply-price-btn" onclick="applyCustomPrice()"></button>
+</div>
+
+<!-- GPS BUTTON -->
+<button id="gps-btn" onclick="toggleGPS()">📍</button>
+
+<!-- NEARBY BANNER -->
+<div id="nearby-banner">
+  <div id="nb-inner">
+    <div class="nb-title"><span id="nb-title-txt"></span><button class="nb-close" onclick="clearNearby()">✕</button></div>
+    <div class="r-chips">
+      <div class="r-chip" onclick="setRadius(500)">500m</div>
+      <div class="r-chip active" onclick="setRadius(1000)">1km</div>
+      <div class="r-chip" onclick="setRadius(2000)">2km</div>
+      <div class="r-chip" onclick="setRadius(5000)">5km</div>
+    </div>
+    <div class="nb-result">
+      <span id="nb-result-text"></span>
+      <button class="nb-clear" id="nb-cancel-btn" onclick="clearNearby()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- MINI LIST -->
+<div id="mini-list"></div>
+
+<!-- STATS PILL -->
+<div id="stats-pill">
+  <div class="ss"><span style="font-size:13px">🗺️</span><span class="ss-val" id="st-places" style="color:var(--gold)">0</span><span class="ss-lbl" id="sl-places"></span></div>
+  <div class="sdiv"></div>
+  <div class="ss"><span style="font-size:13px">👤</span><span class="ss-val" id="st-posters" style="color:var(--orange)">0</span><span class="ss-lbl" id="sl-posters"></span></div>
+  <div class="sdiv"></div>
+  <div class="ss"><span style="font-size:13px">💬</span><span class="ss-val" id="st-reviews" style="color:#a3e635">0</span><span class="ss-lbl" id="sl-reviews"></span></div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div id="pdrag"></div>
+  <div id="pin">
+    <button id="pclose" onclick="closePanel()">✕</button>
+    <div id="panel-content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="mhandle"></div>
+    <div class="mhdr">
+      <div class="mtitle" id="modal-title"></div>
+      <button class="mclose" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- MODERATION TOAST -->
+<div id="mod-toast">
+  <div class="ti">🚫</div>
+  <div><div class="tt-title" id="toast-title"></div><div class="tt-msg" id="toast-msg"></div></div>
+  <button class="tc" onclick="hideToast()">✕</button>
+</div>
+
+<script>
+// ══════════════════════════════════
+// I18N — 7 Languages
+// ══════════════════════════════════
+const LANGS = {
+  th:{flag:'🇹🇭',
+    search:'ค้นหาชื่อร้าน, ย่าน...',post:'โพส',
+    allPrice:'💰 ทุกราคา',budget:'🪙 <50 ฿',p50:'50–100 ฿',p100:'100–200 ฿',pHigh:'>200 ฿',custom:'⚙️ กำหนดเอง',
+    priceRange:'ช่วงราคาต่อคน (บาท)',priceMin:'ต่ำสุด',priceMax:'สูงสุด',baht:'บาท',
+    quickSearch:'ค้นหาด่วน',apply:'✓ ค้นหา',
+    places:'ร้าน',posters:'คนโพส',reviews:'รีวิว',
+    openMaps:'🗺️ เปิดใน Google Maps',reviewsFrom:'รีวิวจากผู้มาเยือน',writeReview:'✏️ เขียนรีวิว',
+    addPlace:'📍 เพิ่มร้านอาหารใหม่',addReview:'✏️ เขียนรีวิว',
+    rName:'ชื่อร้าน *',addr:'ที่อยู่ / ย่าน',cat:'หมวดหมู่',
+    pricePP:'💰 ราคาต่อคน (บาท)',yourName:'ชื่อคุณ *',review:'รีวิว *',
+    tags:'แท็ก (คั่นด้วย ,)',photo:'รูปอาหาร',uploadPh:'📷 แตะเพื่ออัปโหลดรูป',
+    submitPlace:'📍 ปักหมุดร้านอาหาร',submitReview:'💬 โพสรีวิว',
+    nearby:'📍 ร้านใกล้ฉัน',cancel:'ยกเลิก',
+    foundNearby:'พบ {n} ร้าน ในรัศมี {r}',noneNearby:'ไม่พบร้านในรัศมี {r}',
+    checking:'🔍 กำลังตรวจสอบ...',modFail:'เนื้อหาไม่เหมาะสม 🚫',
+    required:'กรุณากรอกชื่อร้าน, ชื่อคุณ และรีวิว',requiredRev:'กรุณากรอกชื่อและรีวิว',
+    gpsError:'กรุณาอนุญาต GPS ในเบราว์เซอร์',yourLoc:'📍 ตำแหน่งของคุณ',
+    catAll:'ทั้งหมด',perPerson:'/คน',justPosted:'เพิ่งโพส',
+    namePH:'เช่น ข้าวมันไก่เจ้าอร่อย',addrPH:'เช่น ถ.เยาวราช',revPH:'เล่าประสบการณ์...',
+    tagsPH:'เช่น อร่อย, ถูก, เปิดดึก',revPH2:'บอกเล่าประสบการณ์...',
+    presets:['ต่ำกว่า 50','50–80','50–100','80–150','100–200','> 200'],
+  },
+  en:{flag:'🇬🇧',
+    search:'Search restaurant, area...',post:'Post',
+    allPrice:'💰 All prices',budget:'🪙 <50 ฿',p50:'50–100 ฿',p100:'100–200 ฿',pHigh:'>200 ฿',custom:'⚙️ Custom',
+    priceRange:'Price range per person (THB)',priceMin:'Min',priceMax:'Max',baht:'THB',
+    quickSearch:'Quick search',apply:'✓ Search',
+    places:'places',posters:'posters',reviews:'reviews',
+    openMaps:'🗺️ Open in Google Maps',reviewsFrom:'Visitor reviews',writeReview:'✏️ Write review',
+    addPlace:'📍 Add Restaurant',addReview:'✏️ Write Review',
+    rName:'Restaurant name *',addr:'Address / Area',cat:'Category',
+    pricePP:'💰 Price per person (THB)',yourName:'Your name *',review:'Review *',
+    tags:'Tags (comma separated)',photo:'Food photo',uploadPh:'📷 Tap to upload photo',
+    submitPlace:'📍 Pin Restaurant',submitReview:'💬 Post Review',
+    nearby:'📍 Near Me',cancel:'Cancel',
+    foundNearby:'Found {n} places within {r}',noneNearby:'No places within {r}',
+    checking:'🔍 Checking...',modFail:'Inappropriate content 🚫',
+    required:'Please fill in restaurant name, your name, and review',requiredRev:'Please fill in your name and review',
+    gpsError:'Please allow GPS in browser',yourLoc:'📍 Your location',
+    catAll:'All',perPerson:'/person',justPosted:'Just posted',
+    namePH:'e.g. Mom\'s Thai Kitchen',addrPH:'e.g. Yaowarat Road',revPH:'Share your dining experience...',
+    tagsPH:'e.g. tasty, cheap, open late',revPH2:'Tell us about your experience...',
+    presets:['Under 50','50–80','50–100','80–150','100–200','Over 200'],
+  },
+  zh:{flag:'🇨🇳',
+    search:'搜索餐厅、区域...',post:'发布',
+    allPrice:'💰 全部价格',budget:'🪙 <50泰铢',p50:'50–100泰铢',p100:'100–200泰铢',pHigh:'>200泰铢',custom:'⚙️ 自定义',
+    priceRange:'人均价格范围（泰铢）',priceMin:'最低',priceMax:'最高',baht:'泰铢',
+    quickSearch:'快速搜索',apply:'✓ 搜索',
+    places:'家',posters:'条帖子',reviews:'条评论',
+    openMaps:'🗺️ 在Google地图中打开',reviewsFrom:'访客评论',writeReview:'✏️ 写评论',
+    addPlace:'📍 添加餐厅',addReview:'✏️ 写评论',
+    rName:'餐厅名称 *',addr:'地址/区域',cat:'类别',
+    pricePP:'💰 人均价格（泰铢）',yourName:'您的名字 *',review:'评论 *',
+    tags:'标签（逗号分隔）',photo:'食物照片',uploadPh:'📷 点击上传照片',
+    submitPlace:'📍 标记餐厅',submitReview:'💬 发布评论',
+    nearby:'📍 附近餐厅',cancel:'取消',
+    foundNearby:'在{r}内找到{n}家',noneNearby:'{r}内没有餐厅',
+    checking:'🔍 检查中...',modFail:'内容不当 🚫',
+    required:'请填写餐厅名称、姓名和评论',requiredRev:'请填写姓名和评论',
+    gpsError:'请在浏览器中允许GPS',yourLoc:'📍 您的位置',
+    catAll:'全部',perPerson:'/人',justPosted:'刚刚发布',
+    namePH:'例：妈妈泰餐',addrPH:'例：耀华力路',revPH:'分享您的用餐体验...',
+    tagsPH:'例：好吃, 便宜, 营业到深夜',revPH2:'讲述您的体验...',
+    presets:['50以下','50–80','50–100','80–150','100–200','200以上'],
+  },
+  ko:{flag:'🇰🇷',
+    search:'식당, 지역 검색...',post:'게시',
+    allPrice:'💰 전체 가격',budget:'🪙 <50바트',p50:'50–100바트',p100:'100–200바트',pHigh:'>200바트',custom:'⚙️ 직접 설정',
+    priceRange:'1인당 가격대 (바트)',priceMin:'최소',priceMax:'최대',baht:'바트',
+    quickSearch:'빠른 검색',apply:'✓ 검색',
+    places:'곳',posters:'명 게시',reviews:'개 리뷰',
+    openMaps:'🗺️ Google Maps에서 열기',reviewsFrom:'방문자 리뷰',writeReview:'✏️ 리뷰 작성',
+    addPlace:'📍 식당 추가',addReview:'✏️ 리뷰 쓰기',
+    rName:'식당 이름 *',addr:'주소/지역',cat:'카테고리',
+    pricePP:'💰 1인당 가격 (바트)',yourName:'이름 *',review:'리뷰 *',
+    tags:'태그 (쉼표로 구분)',photo:'음식 사진',uploadPh:'📷 사진 업로드',
+    submitPlace:'📍 식당 등록',submitReview:'💬 리뷰 게시',
+    nearby:'📍 내 주변',cancel:'취소',
+    foundNearby:'{r} 내 {n}곳 발견',noneNearby:'{r} 내 식당 없음',
+    checking:'🔍 확인 중...',modFail:'부적절한 내용 🚫',
+    required:'식당 이름, 이름, 리뷰를 입력하세요',requiredRev:'이름과 리뷰를 입력하세요',
+    gpsError:'GPS를 허용해주세요',yourLoc:'📍 내 위치',
+    catAll:'전체',perPerson:'/인',justPosted:'방금 게시',
+    namePH:'예: 엄마 태국 식당',addrPH:'예: 야오와랏 거리',revPH:'식사 경험을 공유해주세요...',
+    tagsPH:'예: 맛있어, 저렴, 늦게까지',revPH2:'경험을 알려주세요...',
+    presets:['50 미만','50–80','50–100','80–150','100–200','200 이상'],
+  },
+  ja:{flag:'🇯🇵',
+    search:'レストラン、エリアを検索...',post:'投稿',
+    allPrice:'💰 全価格帯',budget:'🪙 <50B',p50:'50–100B',p100:'100–200B',pHigh:'>200B',custom:'⚙️ カスタム',
+    priceRange:'1人あたりの価格帯（バーツ）',priceMin:'最低',priceMax:'最高',baht:'バーツ',
+    quickSearch:'クイック検索',apply:'✓ 検索',
+    places:'店舗',posters:'投稿者',reviews:'レビュー',
+    openMaps:'🗺️ Google Mapsで開く',reviewsFrom:'訪問者レビュー',writeReview:'✏️ レビューを書く',
+    addPlace:'📍 レストランを追加',addReview:'✏️ レビューを書く',
+    rName:'レストラン名 *',addr:'住所/エリア',cat:'カテゴリ',
+    pricePP:'💰 1人あたりの価格（バーツ）',yourName:'お名前 *',review:'レビュー *',
+    tags:'タグ（カンマ区切り）',photo:'料理の写真',uploadPh:'📷 タップして写真を追加',
+    submitPlace:'📍 レストランを登録',submitReview:'💬 レビューを投稿',
+    nearby:'📍 近くのお店',cancel:'キャンセル',
+    foundNearby:'{r}以内に{n}店舗',noneNearby:'{r}以内に店舗なし',
+    checking:'🔍 確認中...',modFail:'不適切なコンテンツ 🚫',
+    required:'レストラン名、お名前、レビューは必須です',requiredRev:'お名前とレビューは必須です',
+    gpsError:'GPSを許可してください',yourLoc:'📍 現在地',
+    catAll:'すべて',perPerson:'/人',justPosted:'今投稿',
+    namePH:'例：お母さんのタイ料理',addrPH:'例：ヤワラート通り',revPH:'食事体験をシェア...',
+    tagsPH:'例：美味しい、安い、深夜営業',revPH2:'体験を教えてください...',
+    presets:['50未満','50–80','50–100','80–150','100–200','200以上'],
+  },
+  es:{flag:'🇪🇸',
+    search:'Buscar restaurante, zona...',post:'Publicar',
+    allPrice:'💰 Todos los precios',budget:'🪙 <50 ฿',p50:'50–100 ฿',p100:'100–200 ฿',pHigh:'>200 ฿',custom:'⚙️ Personalizar',
+    priceRange:'Rango de precio por persona (THB)',priceMin:'Mín',priceMax:'Máx',baht:'THB',
+    quickSearch:'Búsqueda rápida',apply:'✓ Buscar',
+    places:'lugares',posters:'publicaciones',reviews:'reseñas',
+    openMaps:'🗺️ Abrir en Google Maps',reviewsFrom:'Reseñas de visitantes',writeReview:'✏️ Escribe tu reseña',
+    addPlace:'📍 Agregar restaurante',addReview:'✏️ Escribir reseña',
+    rName:'Nombre del restaurante *',addr:'Dirección / Zona',cat:'Categoría',
+    pricePP:'💰 Precio por persona (THB)',yourName:'Tu nombre *',review:'Reseña *',
+    tags:'Etiquetas (separadas por coma)',photo:'Foto de comida',uploadPh:'📷 Toca para subir foto',
+    submitPlace:'📍 Marcar restaurante',submitReview:'💬 Publicar reseña',
+    nearby:'📍 Cerca de mí',cancel:'Cancelar',
+    foundNearby:'{n} lugares en {r}',noneNearby:'Sin lugares en {r}',
+    checking:'🔍 Verificando...',modFail:'Contenido inapropiado 🚫',
+    required:'Nombre, tu nombre y reseña son obligatorios',requiredRev:'Tu nombre y reseña son obligatorios',
+    gpsError:'Permite el GPS en el navegador',yourLoc:'📍 Tu ubicación',
+    catAll:'Todo',perPerson:'/persona',justPosted:'Recién publicado',
+    namePH:'Ej: Cocina Thai',addrPH:'Ej: Calle Yaowarat',revPH:'Comparte tu experiencia...',
+    tagsPH:'Ej: delicioso, barato, abierto tarde',revPH2:'Cuéntanos tu experiencia...',
+    presets:['Menos 50','50–80','50–100','80–150','100–200','Más 200'],
+  },
+  ru:{flag:'🇷🇺',
+    search:'Поиск ресторана, района...',post:'Опубликовать',
+    allPrice:'💰 Все цены',budget:'🪙 <50 бат',p50:'50–100 бат',p100:'100–200 бат',pHigh:'>200 бат',custom:'⚙️ Своя цена',
+    priceRange:'Диапазон цен на человека (бат)',priceMin:'Мин',priceMax:'Макс',baht:'бат',
+    quickSearch:'Быстрый поиск',apply:'✓ Найти',
+    places:'мест',posters:'публикаций',reviews:'отзывов',
+    openMaps:'🗺️ Открыть в Google Maps',reviewsFrom:'Отзывы посетителей',writeReview:'✏️ Написать отзыв',
+    addPlace:'📍 Добавить ресторан',addReview:'✏️ Написать отзыв',
+    rName:'Название ресторана *',addr:'Адрес / Район',cat:'Категория',
+    pricePP:'💰 Цена на человека (бат)',yourName:'Ваше имя *',review:'Отзыв *',
+    tags:'Теги (через запятую)',photo:'Фото еды',uploadPh:'📷 Нажмите для загрузки',
+    submitPlace:'📍 Отметить ресторан',submitReview:'💬 Опубликовать отзыв',
+    nearby:'📍 Рядом со мной',cancel:'Отмена',
+    foundNearby:'Найдено {n} мест в {r}',noneNearby:'Нет мест в {r}',
+    checking:'🔍 Проверка...',modFail:'Недопустимый контент 🚫',
+    required:'Название, имя и отзыв обязательны',requiredRev:'Имя и отзыв обязательны',
+    gpsError:'Разрешите GPS в браузере',yourLoc:'📍 Ваше местоположение',
+    catAll:'Все',perPerson:'/чел',justPosted:'Только что',
+    namePH:'Напр: Тайская кухня мамы',addrPH:'Напр: ул. Яоварат',revPH:'Поделитесь впечатлениями...',
+    tagsPH:'Напр: вкусно, дёшево, допоздна',revPH2:'Расскажите о своём опыте...',
+    presets:['Менее 50','50–80','50–100','80–150','100–200','Более 200'],
+  },
+};
+
+let currentLang = 'th';
+function t(k){ return LANGS[currentLang]?.[k] ?? LANGS.th[k] ?? k; }
+
+// ══════════════════════════════════
+// CONSTANTS & DATA
+// ══════════════════════════════════
+const CATEGORIES = ['ทั้งหมด','อาหารไทย','ก๋วยเตี๋ยว','หมูกระทะ','อาหารอีสาน','ของหวาน','ติ่มซำ','อาหารจีน','อื่นๆ'];
+const EMOJI = {'อาหารไทย':'🍛','ก๋วยเตี๋ยว':'🍜','หมูกระทะ':'🥩','อาหารอีสาน':'🌶️','ของหวาน':'🍡','ติ่มซำ':'🥟','อาหารจีน':'🥢','อื่นๆ':'🍽️'};
+const PRICE_PRESETS = {all:{min:0,max:99999},budget:{min:0,max:49},low:{min:50,max:100},mid:{min:100,max:200},high:{min:200,max:99999}};
+const PRESET_RANGES = [[0,50],[50,80],[50,100],[80,150],[100,200],[200,9999]];
+
+let places = [
+  {id:1,name:'ข้าวมันไก่ต้นตำรับ',addr:'ถ.เยาวราช, สัมพันธวงศ์',cat:'อาหารไทย',lat:13.7398,lng:100.5144,posters:48,price:{min:40,max:60},
+   reviews:[{author:'สมชาย ใจดี',avatar:'🧑',date:'2 ชม.',text:'ข้าวมันไก่หอมมาก น้ำซุปใส รสกลมกล่อม ไม่เคยผิดหวัง!',tags:['ต้นตำรับ','ราคาถูก'],img:null}]},
+  {id:2,name:'ก๋วยเตี๋ยวเรือวัดดอน',addr:'ย่านสาทร, กรุงเทพฯ',cat:'ก๋วยเตี๋ยว',lat:13.7217,lng:100.5293,posters:134,price:{min:50,max:80},
+   reviews:[
+     {author:'กานดา รักอาหาร',avatar:'👩',date:'5 ชม.',text:'น้ำซุปเข้มข้น เส้นไม่แฉะ คนเยอะช่วงเที่ยง',tags:['เข้มข้น'],img:null},
+     {author:'วิชัย',avatar:'👨',date:'1 วัน',text:'มาแล้วสามครั้ง อร่อยทุกครั้ง',tags:['ราคาดี'],img:null}
+   ]},
+  {id:3,name:'หมูกระทะลุงแดง',addr:'ลาดพร้าว 71',cat:'หมูกระทะ',lat:13.7967,lng:100.5728,posters:89,price:{min:199,max:299},
+   reviews:[{author:'นิรันดร์',avatar:'👨‍🍳',date:'1 วัน',text:'เนื้อสดมาก น้ำจิ้มสูตรเด็ด',tags:['บุฟเฟ่ต์','คุ้มค่า'],img:null}]},
+  {id:4,name:'ส้มตำนางงาม',addr:'ตลาดรัชดา, ห้วยขวาง',cat:'อาหารอีสาน',lat:13.7700,lng:100.5641,posters:57,price:{min:50,max:120},
+   reviews:[{author:'ปุ้ย',avatar:'👩‍🍳',date:'3 ชม.',text:'แซ่บมาก ปลาร้าหอม',tags:['แซ่บ','อีสาน'],img:null}]},
+  {id:5,name:'ติ่มซำป้าลี',addr:'เยาวราช ใกล้วัดไตรมิตร',cat:'ติ่มซำ',lat:13.7405,lng:100.5101,posters:212,price:{min:80,max:150},
+   reviews:[
+     {author:'อ้อ สายกิน',avatar:'🧕',date:'6 ชม.',text:'ฮะเก๋าผิวบาง ซาลาเปาฟูนุ่ม คิวยาวแต่คุ้ม',tags:['เก่าแก่','เยาวราช'],img:null},
+     {author:'มิ้ง',avatar:'😋',date:'2 วัน',text:'มาแล้ว 10 กว่าครั้ง ไม่เคยผิดหวัง',tags:['คุ้มค่า'],img:null}
+   ]},
+  {id:6,name:'ขนมหวานอยุธยา',addr:'เกาะรัตนโกสินทร์',cat:'ของหวาน',lat:13.7543,lng:100.4936,posters:33,price:{min:20,max:45},
+   reviews:[{author:'ตาล',avatar:'🙋',date:'เพิ่งโพส',text:'ทองหยิบ ฝอยทอง หอมใบเตยมาก',tags:['ไทยโบราณ'],img:null}]},
+  {id:7,name:'ข้าวต้มปลาสด',addr:'ย่านบางรัก',cat:'อาหารไทย',lat:13.7270,lng:100.5190,posters:61,price:{min:60,max:100},
+   reviews:[{author:'ดา',avatar:'🧑‍🦱',date:'4 ชม.',text:'ปลาสดมาก น้ำซุปหวาน',tags:['เช้า','ปลาสด'],img:null}]},
+  {id:8,name:'เป็ดย่างพัทยา',addr:'สีลม, บางรัก',cat:'อาหารจีน',lat:13.7280,lng:100.5330,posters:95,price:{min:80,max:180},
+   reviews:[{author:'เอ็ม',avatar:'😄',date:'เมื่อวาน',text:'หนังกรอบ เนื้อชุ่ม น้ำจิ้มเข้มข้น',tags:['หนังกรอบ'],img:null}]},
+];
+
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+let activeCat='ทั้งหมด',searchQuery='',priceFilter={min:0,max:99999};
+let selectedId=null,markers={},map;
+let modalMode='new',currentPlaceId=null,pendingImg=null;
+let userLat=null,userLng=null,gpsActive=false,nearbyRadius=1000;
+let userMarker=null,radiusCircle=null,toastTimer=null;
+
+// ══════════════════════════════════
+// LANG SWITCHER
+// ══════════════════════════════════
+function toggleLangDD(){
+  const dd=document.getElementById('lang-dd'),btn=document.getElementById('lang-btn');
+  const opening=!dd.classList.contains('open');
+  dd.classList.toggle('open'); btn.classList.toggle('open');
+  if(opening) setTimeout(()=>document.addEventListener('click',closeLangOutside,{once:true}),10);
+}
+function closeLangDD(){
+  document.getElementById('lang-dd').classList.remove('open');
+  document.getElementById('lang-btn').classList.remove('open');
+}
+function closeLangOutside(e){
+  if(!document.getElementById('lang-dd').contains(e.target)&&!document.getElementById('lang-btn').contains(e.target)) closeLangDD();
+}
+function setLang(lang){
+  currentLang=lang;
+  document.getElementById('cur-flag').textContent=LANGS[lang].flag;
+  Object.keys(LANGS).forEach(l=>{
+    document.getElementById('lc-'+l).style.display=l===lang?'':'none';
+    document.getElementById('lo-'+l).classList.toggle('active',l===lang);
+  });
+  closeLangDD();
+  applyAllTranslations();
+}
+function applyAllTranslations(){
+  document.getElementById('searchbox').placeholder=t('search');
+  document.getElementById('btn-post').textContent=t('post');
+  // price chips
+  document.getElementById('pc-all').textContent=t('allPrice');
+  document.getElementById('pc-budget').textContent=t('budget');
+  document.getElementById('pc-low').textContent=t('p50');
+  document.getElementById('pc-mid').textContent=t('p100');
+  document.getElementById('pc-high').textContent=t('pHigh');
+  const pc=document.getElementById('pc-custom');
+  if(!pc.classList.contains('active')) pc.textContent=t('custom');
+  // price drawer
+  document.getElementById('dl-range').textContent=t('priceRange');
+  document.getElementById('price-min').placeholder=t('priceMin');
+  document.getElementById('price-max').placeholder=t('priceMax');
+  document.getElementById('dl-unit').textContent=t('baht');
+  document.getElementById('dl-quick').textContent=t('quickSearch');
+  document.getElementById('apply-price-btn').textContent=t('apply');
+  // preset buttons
+  const pg=document.getElementById('preset-grid');
+  pg.innerHTML=PRESET_RANGES.map((r,i)=>`<button class="preset-btn" onclick="fillPreset(${r[0]},${r[1]})">${t('presets')[i]}</button>`).join('');
+  // stats labels
+  document.getElementById('sl-places').textContent=t('places');
+  document.getElementById('sl-posters').textContent=t('posters');
+  document.getElementById('sl-reviews').textContent=t('reviews');
+  // nearby
+  document.getElementById('nb-title-txt').textContent=t('nearby');
+  document.getElementById('nb-cancel-btn').textContent=t('cancel');
+  renderCats(); updateStats(); updateNearbyResult();
+  // refresh panel if open
+  if(selectedId){const p=places.find(x=>x.id===selectedId);if(p) renderPanel(p);}
+}
+
+// ══════════════════════════════════
+// MAP
+// ══════════════════════════════════
+function initMap(){
+  map=L.map('map',{zoomControl:false,attributionControl:false}).setView([13.756,100.531],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  map.on('click',()=>{if(selectedId) closePanel();});
+  const s=document.createElement('style');
+  s.textContent=`.tt{background:#fff!important;border:none!important;border-radius:8px!important;padding:7px 11px!important;box-shadow:0 4px 16px rgba(0,0,0,.28)!important;font-family:inherit}.tt::before{border-top-color:#fff!important}.leaflet-control-zoom a{background:rgba(14,11,4,.92)!important;color:#F97316!important;border:1px solid rgba(255,255,255,.1)!important;font-size:16px!important}.leaflet-control-zoom a:hover{background:rgba(24,18,8,.97)!important}.leaflet-control-attribution{display:none!important}`;
+  document.head.appendChild(s);
+  applyAllTranslations();
+  renderAll();
+}
+
+function renderAll(){ renderCats(); renderMarkers(); updateStats(); renderMiniList(); }
+
+// ══════════════════════════════════
+// MARKERS
+// ══════════════════════════════════
+function ge(cat){ return EMOJI[cat]||'🍽️'; }
+function mkIcon(p,sel=false){
+  return L.divIcon({className:'',html:`<div class="food-marker ${sel?'selected':''}"><div class="inner">${ge(p.cat)}</div></div>`,iconSize:[34,34],iconAnchor:[17,34]});
+}
+function renderMarkers(){
+  Object.values(markers).forEach(m=>map.removeLayer(m)); markers={};
+  filteredPlaces().forEach(p=>{
+    const m=L.marker([p.lat,p.lng],{icon:mkIcon(p)});
+    m.on('click',()=>selectPlace(p.id));
+    const ps=p.price?`<span style="color:#16a34a;font-weight:700">฿${p.price.min}–${p.price.max}</span>`:'';
+    m.bindTooltip(`<div style="font-weight:800;font-size:13px;color:#111;margin-bottom:2px">${p.name}</div><div style="font-size:11px;color:#555">${p.cat}${ps?' · '+ps:''}</div>`,
+      {direction:'top',offset:[0,-36],opacity:1,className:'tt'});
+    m.addTo(map); markers[p.id]=m;
+  });
+  renderMiniList();
+}
+
+function filteredPlaces(){
+  return places.filter(p=>{
+    const cOk=activeCat==='ทั้งหมด'||p.cat===activeCat;
+    const q=searchQuery.toLowerCase();
+    const sOk=!q||p.name.toLowerCase().includes(q)||(p.addr||'').toLowerCase().includes(q)||p.cat.toLowerCase().includes(q);
+    const pMin=p.price?p.price.min:0,pMax=p.price?p.price.max:99999;
+    const pOk=pMax>=priceFilter.min&&pMin<=priceFilter.max;
+    const gOk=!gpsActive||!userLat||(distM(userLat,userLng,p.lat,p.lng)<=nearbyRadius);
+    return cOk&&sOk&&pOk&&gOk;
+  });
+}
+function filterMarkers(){ searchQuery=document.getElementById('searchbox').value; renderMarkers(); updateStats(); }
+function distM(la1,ln1,la2,ln2){
+  const R=6371000,dLa=(la2-la1)*Math.PI/180,dLn=(ln2-ln1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLn/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function fmtDist(m){ return m<1000?Math.round(m)+'m':((m/1000).toFixed(1)+'km'); }
+
+// ══════════════════════════════════
+// SELECT / PANEL
+// ══════════════════════════════════
+function selectPlace(id){
+  if(selectedId&&markers[selectedId]){const pp=places.find(x=>x.id===selectedId);if(pp) markers[selectedId].setIcon(mkIcon(pp,false));}
+  selectedId=id;
+  const p=places.find(x=>x.id===id); if(!p)return;
+  if(markers[id]) markers[id].setIcon(mkIcon(p,true));
+  map.panTo([p.lat,p.lng],{animate:true});
+  renderPanel(p);
+  document.getElementById('stats-pill').classList.add('hidden');
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('stats-pill').classList.remove('hidden');
+  if(selectedId&&markers[selectedId]){const pp=places.find(x=>x.id===selectedId);if(pp) markers[selectedId].setIcon(mkIcon(pp,false));}
+  selectedId=null;
+}
+function renderPanel(p){
+  const total=(p.reviews.length)+(p.posters||0);
+  const gm=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+' '+p.addr)}`;
+  const ps=p.price?`฿${p.price.min}–${p.price.max} ${t('perPerson')}`:'';
+  const pl=p.price?pLvl(p.price.min,p.price.max):'';
+  const db=(gpsActive&&userLat)?`<span class="bdg or">📍 ${fmtDist(distM(userLat,userLng,p.lat,p.lng))}</span>`:'';
+  const rvh=(p.reviews||[]).map(r=>`
+    <div class="rvc">
+      <div class="rvtop"><div class="rvav">${r.avatar||'🙋'}</div>
+        <div><div class="rvname">${r.author}</div><div class="rvdate">${r.date}</div></div></div>
+      ${r.img?`<img src="${r.img}" class="rvimg"/>`:''}
+      <div class="rvtxt">"${r.text}"</div>
+      <div class="rvtags">${(r.tags||[]).map(tg=>`<span class="tag">#${tg}</span>`).join('')}</div>
+    </div>`).join('');
+  document.getElementById('panel-content').innerHTML=`
+    <div class="pname">${p.name}</div>
+    <div class="paddr">📍 ${p.addr}</div>
+    <div class="badge-row">
+      <span class="bdg or">${ge(p.cat)} ${p.cat}</span>
+      ${ps?`<span class="bdg gr">💰 ${ps} ${pl}</span>`:''}
+      ${db}<span class="bdg">👥 ${total} ${t('posters')}</span>
+      <span class="bdg go">💬 ${p.reviews.length} ${t('reviews')}</span>
+    </div>
+    <a href="${gm}" target="_blank" class="gml">${t('openMaps')}</a>
+    <div class="rvhdr">${t('reviewsFrom')} (${p.reviews.length})</div>
+    ${rvh}
+    <button class="wrv-btn" onclick="openModal('review',${p.id})">${t('writeReview')}</button>`;
+  document.getElementById('panel').classList.add('open');
+}
+function pLvl(mn,mx){const a=(mn+mx)/2;if(a<50)return'🪙';if(a<100)return'💚';if(a<200)return'💛';return'💎';}
+
+// ══════════════════════════════════
+// CATEGORIES
+// ══════════════════════════════════
+function renderCats(){
+  const cnt={};places.forEach(p=>{cnt[p.cat]=(cnt[p.cat]||0)+1;});
+  document.getElementById('catbar').innerHTML=CATEGORIES.map((c,i)=>{
+    const lbl=i===0?t('catAll'):c;
+    return`<div class="cat-chip ${c===activeCat?'active':''}" onclick="setCategory('${c}')">
+      ${i>0?ge(c)+' ':''}${lbl}<span class="cc-count">${i===0?places.length:(cnt[c]||0)}</span>
+    </div>`;}).join('');
+}
+function setCategory(c){activeCat=c;renderCats();renderMarkers();updateStats();closePanel();}
+
+// ══════════════════════════════════
+// PRICE FILTER
+// ══════════════════════════════════
+function setPricePreset(id){
+  priceFilter={...PRICE_PRESETS[id]};
+  ['all','budget','low','mid','high'].forEach(i=>document.getElementById('pc-'+i).classList.remove('active'));
+  document.getElementById('pc-custom').classList.remove('active');
+  document.getElementById('pc-'+id).classList.add('active');
+  document.getElementById('price-drawer').classList.remove('open');
+  renderMarkers();updateStats();closePanel();
+}
+function togglePriceDrawer(){document.getElementById('price-drawer').classList.toggle('open');}
+function fillPreset(a,b){document.getElementById('price-min').value=a===0?'':a;document.getElementById('price-max').value=b>=9999?'':b;}
+function applyCustomPrice(){
+  const mn=parseInt(document.getElementById('price-min').value)||0;
+  const mx=parseInt(document.getElementById('price-max').value)||99999;
+  priceFilter={min:mn,max:mx};
+  ['all','budget','low','mid','high'].forEach(i=>document.getElementById('pc-'+i).classList.remove('active'));
+  const pc=document.getElementById('pc-custom');
+  pc.classList.add('active');pc.textContent=`฿${mn===0?'0':mn}–${mx>=9999?'∞':mx}`;
+  document.getElementById('price-drawer').classList.remove('open');
+  renderMarkers();updateStats();closePanel();
+}
+
+// ══════════════════════════════════
+// STATS & MINI LIST
+// ══════════════════════════════════
+function updateStats(){
+  const v=filteredPlaces();
+  document.getElementById('st-places').textContent=v.length;
+  document.getElementById('st-posters').textContent=v.reduce((s,p)=>s+(p.posters||0)+p.reviews.length,0);
+  document.getElementById('st-reviews').textContent=v.reduce((s,p)=>s+p.reviews.length,0);
+  document.getElementById('sl-places').textContent=t('places');
+  document.getElementById('sl-posters').textContent=t('posters');
+  document.getElementById('sl-reviews').textContent=t('reviews');
+}
+function renderMiniList(){
+  let lst=filteredPlaces();
+  if(gpsActive&&userLat) lst=[...lst].sort((a,b)=>distM(userLat,userLng,a.lat,a.lng)-distM(userLat,userLng,b.lat,b.lng));
+  document.getElementById('mini-list').innerHTML=lst.map(p=>{
+    const ps=p.price?`฿${p.price.min}–${p.price.max}`:'';
+    const dst=(gpsActive&&userLat)?` · <span style="color:var(--orange);font-weight:700">📍${fmtDist(distM(userLat,userLng,p.lat,p.lng))}</span>`:'';
+    return`<div class="mc" onclick="selectPlace(${p.id})">
+      <div class="mc-name">${ge(p.cat)} ${p.name}</div>
+      <div class="mc-cat">${p.cat}${dst}</div>
+      <div class="mc-row"><span class="mc-stats">👥${(p.posters||0)+p.reviews.length} · 💬${p.reviews.length}</span>${ps?`<span class="mc-price">${ps}</span>`:''}</div>
+    </div>`;}).join('');
+}
+
+// ══════════════════════════════════
+// GPS
+// ══════════════════════════════════
+function toggleGPS(){
+  if(gpsActive){clearNearby();return;}
+  const btn=document.getElementById('gps-btn');
+  btn.textContent='⏳';btn.classList.add('loading');
+  if(!navigator.geolocation){alert(t('gpsError'));btn.textContent='📍';btn.classList.remove('loading');return;}
+  navigator.geolocation.getCurrentPosition(
+    pos=>onGotLoc(pos.coords.latitude,pos.coords.longitude),
+    ()=>{btn.textContent='📍';btn.classList.remove('loading');alert(t('gpsError'));},
+    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+  );
+}
+function onGotLoc(lat,lng){
+  userLat=lat;userLng=lng;gpsActive=true;
+  const btn=document.getElementById('gps-btn');
+  btn.textContent='🎯';btn.classList.remove('loading');btn.classList.add('active');
+  if(userMarker) map.removeLayer(userMarker);
+  userMarker=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:1000}).addTo(map);
+  userMarker.bindTooltip(`<div style="font-size:12px;font-weight:700;color:#c2410c">${t('yourLoc')}</div>`,{direction:'top',offset:[0,-10],className:'tt'});
+  drawRadiusCircle();
+  map.flyTo([lat,lng],15,{animate:true,duration:1.2});
+  document.getElementById('nearby-banner').classList.add('open');
+  updateNearbyResult();renderMarkers();updateStats();closePanel();
+}
+function drawRadiusCircle(){
+  if(!userLat)return;if(radiusCircle) map.removeLayer(radiusCircle);
+  radiusCircle=L.circle([userLat,userLng],{radius:nearbyRadius,color:'#F97316',weight:1.5,opacity:.6,fillColor:'#F97316',fillOpacity:.06,dashArray:'6 4'}).addTo(map);
+}
+function setRadius(r){
+  nearbyRadius=r;
+  document.querySelectorAll('.r-chip').forEach(el=>{
+    const v=el.textContent.trim();
+    el.classList.toggle('active',v===r+'m'||(r===1000&&v==='1km')||(r===2000&&v==='2km')||(r===5000&&v==='5km'));
+  });
+  drawRadiusCircle();renderMarkers();updateStats();updateNearbyResult();
+  if(radiusCircle) map.fitBounds(radiusCircle.getBounds(),{padding:[40,40],animate:true});
+}
+function updateNearbyResult(){
+  const el=document.getElementById('nb-result-text');
+  if(!el)return;
+  if(!userLat){el.textContent='...';return;}
+  const n=filteredPlaces().length,r=nearbyRadius<1000?nearbyRadius+'m':(nearbyRadius/1000)+'km';
+  el.innerHTML=n===0
+    ?t('noneNearby').replace('{r}',`<strong>${r}</strong>`)
+    :t('foundNearby').replace('{n}',`<strong style="color:var(--orange)">${n}</strong>`).replace('{r}',`<strong>${r}</strong>`);
+  document.getElementById('nb-title-txt').textContent=t('nearby');
+  document.getElementById('nb-cancel-btn').textContent=t('cancel');
+}
+function clearNearby(){
+  gpsActive=false;userLat=null;userLng=null;
+  const btn=document.getElementById('gps-btn');btn.textContent='📍';btn.classList.remove('active','loading');
+  if(userMarker){map.removeLayer(userMarker);userMarker=null;}
+  if(radiusCircle){map.removeLayer(radiusCircle);radiusCircle=null;}
+  document.getElementById('nearby-banner').classList.remove('open');
+  renderMarkers();updateStats();renderMiniList();
+}
+
+// ══════════════════════════════════
+// MODERATION
+// ══════════════════════════════════
+function showToast(title,msg){
+  document.getElementById('toast-title').textContent=title;
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('mod-toast').classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(hideToast,6000);
+}
+function hideToast(){document.getElementById('mod-toast').classList.remove('show');}
+
+async function moderate(texts){
+  const combined=texts.filter(Boolean).join('\n---\n');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:200,
+        system:`You are a content moderation system for a local food review app.
+Check if the text contains: profanity/obscenities (any language), hate speech, spam/ads/URLs, sexual or violent content, personal info (phone/address of others), threats or harassment.
+Reply ONLY valid JSON: {"ok":true} if clean, {"ok":false,"reason":"short explanation in the same language as the input"} if not.`,
+        messages:[{role:'user',content:`Check this content:\n${combined}`}]
+      })
+    });
+    if(!res.ok)return{ok:true};
+    const data=await res.json();
+    const txt=(data.content?.[0]?.text||'{"ok":true}').replace(/```json|```/g,'').trim();
+    return JSON.parse(txt);
+  }catch(e){return{ok:true};}
+}
+
+// ══════════════════════════════════
+// MODAL
+// ══════════════════════════════════
+function openModal(mode,placeId=null){
+  modalMode=mode;currentPlaceId=placeId;pendingImg=null;
+  const body=document.getElementById('modal-body');
+  document.getElementById('modal-title').textContent=mode==='new'?t('addPlace'):t('addReview');
+
+  if(mode==='new'){
+    body.innerHTML=`
+      <label class="flbl">${t('rName')}</label>
+      <input id="fn" class="fi" placeholder="${t('namePH')}"/>
+      <label class="flbl">${t('addr')}</label>
+      <input id="fa" class="fi" placeholder="${t('addrPH')}"/>
+      <label class="flbl">${t('cat')}</label>
+      <select id="fc" class="fi">${CATEGORIES.slice(1).map(c=>`<option>${c}</option>`).join('')}</select>
+      <label class="flbl">${t('pricePP')}</label>
+      <div class="pr-row">
+        <input id="fpmn" class="fi" type="number" placeholder="${t('priceMin')}" min="0"/>
+        <span style="color:var(--muted)">—</span>
+        <input id="fpmx" class="fi" type="number" placeholder="${t('priceMax')}" min="0"/>
+        <span style="color:var(--muted);font-size:12px">${t('baht')}</span>
+      </div>
+      <div class="pq-grid">
+        ${PRESET_RANGES.map((r,i)=>`<button type="button" class="pqb" onclick="qfp(${r[0]},${r[1]})">${t('presets')[i]}</button>`).join('')}
+      </div>
+      <label class="flbl">${t('yourName')}</label>
+      <input id="fau" class="fi" placeholder="${t('yourName').replace(' *','')}"/>
+      <label class="flbl">${t('review')}</label>
+      <textarea id="frv" class="fi" rows="4" placeholder="${t('revPH')}"></textarea>
+      <label class="flbl">${t('tags')}</label>
+      <input id="ftg" class="fi" placeholder="${t('tagsPH')}"/>
+      <label class="flbl">${t('photo')}</label>
+      <div class="img-zone" onclick="document.getElementById('fimg').click()" id="img-zone">
+        <div style="color:var(--muted);font-size:13px">${t('uploadPh')}</div>
+      </div>
+      <input id="fimg" type="file" accept="image/*" style="display:none" onchange="prevImg(this)"/>
+      <button class="sbtn" id="sbtn" onclick="submitNew()">${t('submitPlace')}</button>`;
+  } else {
+    const p=places.find(x=>x.id===placeId);
+    body.innerHTML=`
+      <div style="color:var(--gold);font-weight:700;font-size:14px;margin-bottom:13px;
+        padding:9px 11px;background:rgba(234,179,8,.08);border-radius:8px">
+        ${ge(p?.cat||'')} ${p?.name||''}</div>
+      <label class="flbl">${t('yourName')}</label>
+      <input id="fau" class="fi" placeholder="${t('yourName').replace(' *','')}"/>
+      <label class="flbl">${t('review')}</label>
+      <textarea id="frv" class="fi" rows="5" placeholder="${t('revPH2')}"></textarea>
+      <label class="flbl">${t('tags')}</label>
+      <input id="ftg" class="fi" placeholder="${t('tagsPH')}"/>
+      <label class="flbl">${t('photo')}</label>
+      <div class="img-zone" onclick="document.getElementById('fimg').click()" id="img-zone">
+        <div style="color:var(--muted);font-size:13px">${t('uploadPh')}</div>
+      </div>
+      <input id="fimg" type="file" accept="image/*" style="display:none" onchange="prevImg(this)"/>
+      <button class="sbtn" id="sbtn" onclick="submitReview()">${t('submitReview')}</button>`;
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function prevImg(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{pendingImg=e.target.result;document.getElementById('img-zone').innerHTML=`<img src="${pendingImg}" class="img-preview"/>`;};
+  r.readAsDataURL(f);
+}
+function qfp(a,b){document.getElementById('fpmn').value=a;document.getElementById('fpmx').value=b;}
+
+function setChecking(v){
+  const btn=document.getElementById('sbtn');if(!btn)return;
+  if(v){btn.classList.add('checking');btn.textContent=t('checking');}
+  else btn.classList.remove('checking');
+}
+
+async function submitNew(){
+  const name=document.getElementById('fn').value.trim();
+  const author=document.getElementById('fau').value.trim();
+  const review=document.getElementById('frv').value.trim();
+  if(!name||!author||!review){showToast('⚠️',t('required'));return;}
+  setChecking(true);
+  const tags=document.getElementById('ftg').value;
+  const result=await moderate([name,author,review,tags]);
+  if(!result.ok){setChecking(false);showToast(t('modFail'),result.reason||'');return;}
+  const addr=document.getElementById('fa').value.trim()||'—';
+  const cat=document.getElementById('fc').value;
+  const tagArr=tags.split(',').map(x=>x.trim()).filter(Boolean);
+  const mn=parseInt(document.getElementById('fpmn').value)||0;
+  const mx=parseInt(document.getElementById('fpmx').value)||mn;
+  const lat=13.72+Math.random()*.12,lng=100.48+Math.random()*.12;
+  const np={id:Date.now(),name,addr,cat,lat,lng,posters:0,
+    price:{min:mn,max:Math.max(mn,mx)},
+    reviews:[{author,avatar:'🙋',date:t('justPosted'),text:review,tags:tagArr,img:pendingImg||null}]};
+  places.unshift(np);
+  closeModal();renderCats();renderMarkers();updateStats();
+  setTimeout(()=>selectPlace(np.id),300);map.panTo([lat,lng],{animate:true,duration:1});
+}
+
+async function submitReview(){
+  const author=document.getElementById('fau').value.trim();
+  const review=document.getElementById('frv').value.trim();
+  if(!author||!review){showToast('⚠️',t('requiredRev'));return;}
+  setChecking(true);
+  const tags=document.getElementById('ftg').value;
+  const result=await moderate([author,review,tags]);
+  if(!result.ok){setChecking(false);showToast(t('modFail'),result.reason||'');return;}
+  const tagArr=tags.split(',').map(x=>x.trim()).filter(Boolean);
+  const p=places.find(x=>x.id===currentPlaceId);if(!p)return;
+  p.reviews.unshift({author,avatar:'🙋',date:t('justPosted'),text:review,tags:tagArr,img:pendingImg||null});
+  closeModal();updateStats();if(selectedId===currentPlaceId) renderPanel(p);
+}
+
+window.onload=initMap;
+</script>
+</body>
+</html>
