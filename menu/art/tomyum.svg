@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 300" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <g id="chilli"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g>
+    <g id="prawn">
+      <path d="M44 6C18 4 2 22 2 44c0 26 20 44 46 44-14-12-22-26-22-44 0-16 6-30 18-38Z"/>
+      <g stroke-width="1.7" opacity=".75"><path d="M8 24c6 6 12 8 20 8M2 46c10 2 18 2 24 0M10 66c8-4 14-6 20-8"/></g>
+      <path d="M48 88c11 14 23 18 31 12-4-10-4-18 0-26-13-4-25 2-31 14Z"/>
+      <path d="M44 6 70-6" stroke-width="2"/>
+      <g stroke-width="1.6" opacity=".7"><path d="M47 2c14-10 29-12 40-8M49 12c16-5 31-3 42 3M30 34l11-7M28 46h13M30 58l11 7"/></g>
+      <circle cx="39" cy="15" r="3.4" fill="currentColor" stroke="none"/>
+    </g>
+  </defs>
+  <g stroke-width="2.1" opacity=".7">
+    <path d="M196 122c-11-17 11-25 0-42s9-25 0-40"/><path d="M240 112c-12-19 12-28 0-47s10-28 0-45"/><path d="M284 122c-11-17 11-25 0-42s9-25 0-40"/>
+  </g>
+  <g stroke-width="2.1"><use href="#prawn" transform="translate(190 114) rotate(-4) scale(.78)"/></g>
+  <g stroke-width="2" opacity=".85">
+    <circle cx="256" cy="176" r="8"/><circle cx="256" cy="176" r="3.4"/>
+    <circle cx="298" cy="166" r="7"/><circle cx="298" cy="166" r="3"/>
+    <circle cx="284" cy="184" r="6"/><circle cx="284" cy="184" r="2.6"/>
+    <path d="M296 148c15-10 35-10 45 2-15 9-35 9-45-2Z"/>
+    <path d="M212 184c11-8 25-8 33 2-12 8-27 6-33-2Z"/>
+    <path d="M320 176c14-13 33-13 43 0-12 13-31 13-43 0ZM320 176c-11 14-11 31 2 41 11-12 11-29-2-41Z" opacity=".8"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="230" cy="184" rx="122" ry="27"/>
+    <path d="M108 184c4 42 54 76 122 76s118-34 122-76"/><path d="M196 258v10q34 8 68 0v-10"/>
+    <ellipse cx="230" cy="184" rx="105" ry="22" stroke-width="1.6" opacity=".5"/>
+  </g>
+  <g stroke-width="2.1" opacity=".8"><use href="#chilli" transform="translate(48 208) rotate(-14)"/><use href="#chilli" transform="translate(404 224) rotate(26) scale(.85)"/></g>
+</svg>

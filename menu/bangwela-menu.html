@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เมนู · ร้านบางเวลา</title>
+<style>
+@font-face{font-family:Kanit;src:url(fonts/Kanit-200.ttf) format("truetype");font-weight:200;font-style:normal}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-300.ttf) format("truetype");font-weight:300;font-style:normal}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-400.ttf) format("truetype");font-weight:400;font-style:normal}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-500.ttf) format("truetype");font-weight:500;font-style:normal}
+@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-300.ttf) format("truetype");font-weight:300;font-style:normal}
+@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-400.ttf) format("truetype");font-weight:400;font-style:normal}
+@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-400i.ttf) format("truetype");font-weight:400;font-style:italic}
+
+:root{
+  --bg:#0a0a0b;
+  --ink:#ffffff;
+  --dim:rgba(255,255,255,.52);
+  --faint:rgba(255,255,255,.20);
+  --gold:#c9a24d;
+}
+
+@page{ size:297mm 420mm; margin:0 }
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#2a2a2c}
+body{ font-family:Kanit,"Noto Sans Thai",sans-serif; -webkit-font-smoothing:antialiased }
+
+.page{
+  position:relative;
+  width:297mm; height:420mm;
+  margin:0 auto;
+  padding:19mm 22mm 14mm;
+  background:
+    radial-gradient(115% 78% at 50% 16%, #191a1d 0%, #0e0e10 46%, var(--bg) 78%);
+  color:var(--ink);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  break-after:page; page-break-after:always;
+}
+.page:last-child{break-after:auto;page-break-after:auto}
+
+/* กรอบเส้นบาง + มุมทอง */
+.frame{position:absolute;inset:11mm;border:.35mm solid rgba(201,162,77,.28);pointer-events:none}
+.frame span{position:absolute;width:9mm;height:9mm;border:.8mm solid var(--gold);opacity:.8}
+.frame span:nth-child(1){top:-1.1mm;left:-1.1mm;border-right:0;border-bottom:0}
+.frame span:nth-child(2){top:-1.1mm;right:-1.1mm;border-left:0;border-bottom:0}
+.frame span:nth-child(3){bottom:-1.1mm;left:-1.1mm;border-right:0;border-top:0}
+.frame span:nth-child(4){bottom:-1.1mm;right:-1.1mm;border-left:0;border-top:0}
+
+/* ---------- หัวกระดาษ ---------- */
+.head{text-align:center;flex:none}
+.head .th{font-weight:200;font-size:12.5mm;line-height:1.05;letter-spacing:.14em;text-indent:.14em}
+.head .en{margin-top:2.6mm;font-family:Cormorant,serif;font-weight:400;font-size:3.3mm;
+  letter-spacing:.72em;text-indent:.72em;text-transform:uppercase;color:var(--gold)}
+.head .est{margin-top:2.2mm;font-weight:200;font-size:3.5mm;
+  letter-spacing:.30em;text-indent:.30em;color:var(--dim)}
+
+.rule{display:flex;align-items:center;justify-content:center;gap:3mm;margin:6mm 0 0;flex:none}
+.rule i{display:block;height:.3mm;width:26mm;background:linear-gradient(90deg,transparent,rgba(201,162,77,.75))}
+.rule i+i{background:linear-gradient(90deg,rgba(201,162,77,.75),transparent)}
+.rule b{width:2.2mm;height:2.2mm;background:var(--gold);transform:rotate(45deg)}
+
+/* ---------- ชื่อหน้า ---------- */
+.ptitle{text-align:center;flex:none;margin-top:8mm}
+.ptitle .th{font-weight:300;font-size:11.5mm;line-height:1.2;letter-spacing:.05em}
+.ptitle .en{margin-top:1mm;font-family:Cormorant,serif;font-style:italic;font-size:4.6mm;
+  letter-spacing:.34em;text-indent:.34em;color:var(--gold);text-transform:uppercase}
+
+/* ---------- เนื้อหา ---------- */
+.body{flex:none;margin-top:11mm;display:grid;grid-template-columns:1fr 1fr;gap:0 14mm}
+.col+.col{border-left:.3mm solid rgba(255,255,255,.13);padding-left:14mm}
+
+.sec{margin-bottom:5mm}
+.sec+.sec{margin-top:10mm}
+.sec-h{margin-bottom:5.5mm}
+.sec-h .th{font-weight:400;font-size:6.8mm;letter-spacing:.06em;line-height:1.3}
+.sec-h .th em{font-style:normal;font-weight:300;font-size:.66em;color:var(--dim)}
+.sec-h .en{margin-top:.6mm;font-family:Cormorant,serif;font-size:3.2mm;letter-spacing:.42em;
+  text-transform:uppercase;color:var(--gold)}
+.sec-h .bar{margin-top:2.6mm;height:.3mm;background:linear-gradient(90deg,rgba(201,162,77,.85),rgba(201,162,77,0))}
+
+.item{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 4.8mm}
+.body.dense .item{margin-bottom:4.0mm}
+.body.dense .sec+.sec{margin-top:8mm}
+.item .n{font-weight:300;font-size:5.4mm;line-height:1.35;white-space:nowrap}
+.item .n em{font-style:normal;font-size:.82em;color:var(--dim)}
+.item .dots{flex:1 1 auto;height:.28mm;background:repeating-linear-gradient(90deg,var(--faint) 0 .5mm,transparent .5mm 2mm);
+  transform:translateY(-1.1mm);min-width:6mm}
+.item .p{font-weight:300;font-size:5.4mm;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item .sz{display:block;font-family:Cormorant,serif;font-style:italic;font-size:3.1mm;
+  letter-spacing:.06em;color:var(--dim);margin-top:-.6mm}
+.item .p .sz{text-align:right}
+
+/* ---------- ภาพประกอบ ---------- */
+.art{flex:1 1 auto;min-height:62mm;display:flex;align-items:center;justify-content:center;
+  padding:10mm 0 2mm;color:var(--gold);opacity:.9}
+.art svg{width:auto;height:100%;max-height:100%;object-fit:contain}
+
+/* ---------- ท้ายกระดาษ ---------- */
+.tail{flex:none;display:flex;align-items:center;justify-content:center;gap:2.6mm;margin:0 0 7mm}
+.tail i{width:1.1mm;height:1.1mm;border-radius:50%;background:var(--gold);opacity:.55}
+.tail b{width:1.9mm;height:1.9mm;background:var(--gold);transform:rotate(45deg);opacity:.85}
+.foot{flex:none;display:flex;align-items:center;justify-content:space-between;
+  border-top:.3mm solid rgba(255,255,255,.13);padding-top:4mm;
+  font-family:Cormorant,serif;font-size:3.2mm;letter-spacing:.34em;
+  text-transform:uppercase;color:var(--dim)}
+.foot .no{color:var(--gold)}
+.foot .mid{font-style:italic;letter-spacing:.12em;text-transform:none}
+
+@media screen{
+  body{padding:26px 0;display:flex;flex-direction:column;align-items:center;gap:26px}
+  .page{box-shadow:0 18px 60px rgba(0,0,0,.75)}
+}
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="frame"><span></span><span></span><span></span><span></span></div>
+  <header class="head"><div class="th">บางเวลา</div><div class="en">Bangwela</div><div class="est">อาหารไทย · ต้ม ยำ ทำ แกง</div></header><div class="rule"><i></i><b></b><i></i></div>
+  <div class="ptitle">
+    <div class="th">ของกินเล่น &amp; ทอด</div>
+    <div class="en">Snacks &amp; Fried</div>
+  </div>
+  <div class="body"><div class="col"><div class="sec"><div class="sec-h"><div class="th">ของกินเล่น</div><div class="en">Snacks &amp; Bites</div><div class="bar"></div></div><div class="item"><span class="n">เอ็นไก่ทอด</span><span class="dots"></span><span class="p">115</span></div><div class="item"><span class="n">ลาบทอด</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">เฟรนช์ฟราย</span><span class="dots"></span><span class="p">95</span></div><div class="item"><span class="n">เม็ดมะม่วงหิมพานต์ทอด</span><span class="dots"></span><span class="p">125</span></div><div class="item"><span class="n">ยำเม็ดมะม่วงหิมพานต์</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">ถั่วลิสงทอด</span><span class="dots"></span><span class="p">95</span></div><div class="item"><span class="n">ยำถั่วลิสง</span><span class="dots"></span><span class="p">115</span></div><div class="item"><span class="n">สะเก็ดระเบิด</span><span class="dots"></span><span class="p">125</span></div><div class="item"><span class="n">ไก่กรอบซอสมะนาว</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">กุ้งชุบแป้งทอด</span><span class="dots"></span><span class="p">145</span></div><div class="item"><span class="n">แหนมซี่โครงทอด</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">ปากเป็ดทอด</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">ข้าวเกรียบทอด</span><span class="dots"></span><span class="p">95</span></div><div class="item"><span class="n">ปูอัดวาซาบิ</span><span class="dots"></span><span class="p">135</span></div></div></div><div class="col"><div class="sec"><div class="sec-h"><div class="th">ทอด</div><div class="en">Deep Fried</div><div class="bar"></div></div><div class="item"><span class="n">ปลากะพงทอดน้ำปลา</span><span class="dots"></span><span class="p">395</span></div><div class="item"><span class="n">ปลาทับทิมทอดกระเทียม</span><span class="dots"></span><span class="p">335</span></div><div class="item"><span class="n">หมูสามชั้นทอดน้ำปลา</span><span class="dots"></span><span class="p">145</span></div><div class="item"><span class="n">ปีกไก่ทอดน้ำปลา</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">หมูแดดเดียว</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">เนื้อแดดเดียว</span><span class="dots"></span><span class="p">175</span></div><div class="item"><span class="n">ลาบหมูทอด</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">ไข่เจียวหมูสับ</span><span class="dots"></span><span class="p">115</span></div><div class="item"><span class="n">ไข่เจียวกุ้งสับ</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">กุ้งคั่วพริกเกลือ</span><span class="dots"></span><span class="p">195</span></div><div class="item"><span class="n">สามชั้นคั่วพริกเกลือ</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">กระดูกอ่อนคั่วพริกเกลือ</span><span class="dots"></span><span class="p">175</span></div></div></div></div>
+  <div class="art"><svg preserveAspectRatio="xMidYMid meet" style="max-width:66%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 300" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><path id="nug" d="M-22 3C-25-11-13-19 0-17c11-6 25 2 22 14 3 13-10 20-22 18-13 4-23-2-22-12Z"/><g id="chilli"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g></defs>
+  <g stroke-width="2.1" opacity=".7">
+    <path d="M166 118c-10-15 10-23 0-38s8-23 0-36"/><path d="M204 110c-11-17 11-25 0-42s9-25 0-40"/><path d="M242 118c-10-15 10-23 0-38s8-23 0-36"/>
+  </g>
+  <g stroke-width="2.2">
+    <use href="#nug" transform="translate(152 150) rotate(-14) scale(.94)"/>
+    <use href="#nug" transform="translate(202 138) rotate(6) scale(1.06)"/>
+    <use href="#nug" transform="translate(252 150) rotate(16) scale(.94)"/>
+    <use href="#nug" transform="translate(176 168) rotate(-24) scale(.82)"/>
+    <use href="#nug" transform="translate(230 169) rotate(21) scale(.8)"/>
+    <g opacity=".65" stroke-width="1.8"><path d="M144 131h6M258 132h6M198 121h7M214 178h6M166 180h5"/></g>
+  </g>
+  <g stroke-width="2.8">
+    <ellipse cx="200" cy="172" rx="112" ry="20"/>
+    <path d="M88 172c6 48 50 74 88 76v8q24 6 48 0v-8c38-2 82-28 88-76"/>
+  </g>
+  <g stroke-width="2.1" opacity=".85">
+    <use href="#chilli" transform="translate(344 172) rotate(10)"/>
+    <use href="#chilli" transform="translate(372 208) rotate(-30) scale(.82)"/>
+  </g>
+</svg>
+</div>
+  <div class="tail"><i></i><b></b><i></i></div>
+  <footer class="foot">
+    <span>Bangwela · บางเวลา</span>
+    <span class="mid">ราคาเป็นเงินบาท</span>
+    <span class="no">01 / 05</span>
+  </footer>
+</section>
+<section class="page">
+  <div class="frame"><span></span><span></span><span></span><span></span></div>
+  <header class="head"><div class="th">บางเวลา</div><div class="en">Bangwela</div><div class="est">อาหารไทย · ต้ม ยำ ทำ แกง</div></header><div class="rule"><i></i><b></b><i></i></div>
+  <div class="ptitle">
+    <div class="th">ส้มตำ &amp; ยำ</div>
+    <div class="en">Som Tam &amp; Thai Salads</div>
+  </div>
+  <div class="body"><div class="col"><div class="sec"><div class="sec-h"><div class="th">ส้มตำ</div><div class="en">Som Tam</div><div class="bar"></div></div><div class="item"><span class="n">ส้มตำไทย</span><span class="dots"></span><span class="p">65</span></div><div class="item"><span class="n">ส้มตำปูปลาร้า</span><span class="dots"></span><span class="p">65</span></div><div class="item"><span class="n">ตำข้าวโพดไข่เค็ม</span><span class="dots"></span><span class="p">75</span></div></div><div class="sec"><div class="sec-h"><div class="th">ยำ</div><div class="en">Thai Salads</div><div class="bar"></div></div><div class="item"><span class="n">ลาบหมู</span><span class="dots"></span><span class="p">95</span></div><div class="item"><span class="n">ยำคอหมูย่าง</span><span class="dots"></span><span class="p">125</span></div><div class="item"><span class="n">ยำคะน้ากุ้งสด</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">ยำรวมมิตรทะเล</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">ยำวุ้นเส้นทะเล</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">ยำวุ้นเส้นหมูสับ</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">ยำหมูยอ</span><span class="dots"></span><span class="p">135</span></div></div></div><div class="col"><div class="sec"><div class="sec-h"><div class="th">ยำ <em>(ต่อ)</em></div><div class="en">Thai Salads · continued</div><div class="bar"></div></div><div class="item"><span class="n">ยำมาม่าทะเล</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">ยำมาม่าหมูสับ</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">ยำสามกรอบ</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">หมูมะนาว</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">กุ้งแช่น้ำปลา</span><span class="dots"></span><span class="p">155</span></div><div class="item"><span class="n">ยำแซลม่อนแซ่บ</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">ยำทูน่า</span><span class="dots"></span><span class="p">135</span></div><div class="item"><span class="n">เห่าดงหมู</span><span class="dots"></span><span class="p">135</span></div></div></div></div>
+  <div class="art"><svg preserveAspectRatio="xMidYMid meet" style="max-width:60%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 320" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="chilli"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g><g id="lime"><path d="M0 0a20 20 0 0 1 0 40Z"/><path d="M0 6a14 14 0 0 1 0 28Z" opacity=".8"/><path d="M0 20h14M2 10l10 6M2 30l10-6" opacity=".7"/></g></defs>
+  <g stroke-width="2.6" opacity=".9"><rect x="-11" y="-75" width="22" height="150" rx="11" transform="translate(302 78) rotate(38)"/></g>
+  <g stroke-width="2" opacity=".85">
+    <path d="M124 144c16-26 44-38 74-34"/><path d="M136 133c20-22 50-28 78-18"/><path d="M152 148c22-28 56-34 86-20"/>
+    <path d="M118 155c10-16 24-26 40-30"/><path d="M172 155c22-15 48-16 68-4"/><path d="M196 143c14-12 32-16 48-12"/>
+  </g>
+  <g stroke-width="2" opacity=".85">
+    <path d="M140 162c8-9 20-9 27 0-8 8-20 8-27 0Z"/>
+    <circle cx="168" cy="156" r="5.5"/><circle cx="206" cy="162" r="5"/><circle cx="234" cy="152" r="5.5"/>
+    <use href="#chilli" transform="translate(250 128) rotate(120) scale(.62)"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="190" cy="152" rx="100" ry="23"/>
+    <path d="M90 152c4 66 26 100 62 110l-6 26q44 12 88 0l-6-26c36-10 58-44 62-110"/>
+  </g>
+  <g stroke-width="2.1" opacity=".8">
+    <use href="#chilli" transform="translate(50 240) rotate(-14)"/>
+    <use href="#chilli" transform="translate(338 246) rotate(22) scale(.85)"/>
+    <use href="#lime" transform="translate(388 240) rotate(-12)"/>
+  </g>
+</svg>
+</div>
+  <div class="tail"><i></i><b></b><i></i></div>
+  <footer class="foot">
+    <span>Bangwela · บางเวลา</span>
+    <span class="mid">ราคาเป็นเงินบาท</span>
+    <span class="no">02 / 05</span>
+  </footer>
+</section>
+<section class="page">
+  <div class="frame"><span></span><span></span><span></span><span></span></div>
+  <header class="head"><div class="th">บางเวลา</div><div class="en">Bangwela</div><div class="est">อาหารไทย · ต้ม ยำ ทำ แกง</div></header><div class="rule"><i></i><b></b><i></i></div>
+  <div class="ptitle">
+    <div class="th">ต้ม &amp; แกง</div>
+    <div class="en">Soups &amp; Curries</div>
+  </div>
+  <div class="body"><div class="col"><div class="sec"><div class="sec-h"><div class="th">ต้ม</div><div class="en">Soups</div><div class="bar"></div></div><div class="item"><span class="n">ต้มแซ่บกระดูกอ่อน</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">ต้มยำกุ้งแม่น้ำ <em>(หม้อ)</em></span><span class="dots"></span><span class="p">295</span></div><div class="item"><span class="n">ต้มยำทะเล <em>(หม้อ)</em></span><span class="dots"></span><span class="p">285</span></div><div class="item"><span class="n">ต้มยำทะเล <em>(ถ้วย)</em></span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">โป๊ะแตก <em>(หม้อ)</em></span><span class="dots"></span><span class="p">285</span></div><div class="item"><span class="n">โป๊ะแตก <em>(ถ้วย)</em></span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">ต้มยำปลากดคัง <em>(ถ้วย)</em></span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">ไข่ตุ๋น</span><span class="dots"></span><span class="p">125</span></div><div class="item"><span class="n">ไข่ตุ๋นทะเล</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">ไข่ตุ๋นกุ้ง</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">ต้มจืดเต้าหู้หมูสับสาหร่าย</span><span class="dots"></span><span class="p">135</span></div></div></div><div class="col"><div class="sec"><div class="sec-h"><div class="th">แกง</div><div class="en">Curries</div><div class="bar"></div></div><div class="item"><span class="n">แกงป่าหมู</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">แกงป่าเนื้อ</span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">แกงปลากดคัง</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">แกงส้มชะอมกุ้ง</span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">แกงส้มผักรวมกุ้ง</span><span class="dots"></span><span class="p">165</span></div></div></div></div>
+  <div class="art"><svg preserveAspectRatio="xMidYMid meet" style="max-width:64%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 300" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <g id="chilli"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g>
+    <g id="prawn">
+      <path d="M44 6C18 4 2 22 2 44c0 26 20 44 46 44-14-12-22-26-22-44 0-16 6-30 18-38Z"/>
+      <g stroke-width="1.7" opacity=".75"><path d="M8 24c6 6 12 8 20 8M2 46c10 2 18 2 24 0M10 66c8-4 14-6 20-8"/></g>
+      <path d="M48 88c11 14 23 18 31 12-4-10-4-18 0-26-13-4-25 2-31 14Z"/>
+      <path d="M44 6 70-6" stroke-width="2"/>
+      <g stroke-width="1.6" opacity=".7"><path d="M47 2c14-10 29-12 40-8M49 12c16-5 31-3 42 3M30 34l11-7M28 46h13M30 58l11 7"/></g>
+      <circle cx="39" cy="15" r="3.4" fill="currentColor" stroke="none"/>
+    </g>
+  </defs>
+  <g stroke-width="2.1" opacity=".7">
+    <path d="M196 122c-11-17 11-25 0-42s9-25 0-40"/><path d="M240 112c-12-19 12-28 0-47s10-28 0-45"/><path d="M284 122c-11-17 11-25 0-42s9-25 0-40"/>
+  </g>
+  <g stroke-width="2.1"><use href="#prawn" transform="translate(190 114) rotate(-4) scale(.78)"/></g>
+  <g stroke-width="2" opacity=".85">
+    <circle cx="256" cy="176" r="8"/><circle cx="256" cy="176" r="3.4"/>
+    <circle cx="298" cy="166" r="7"/><circle cx="298" cy="166" r="3"/>
+    <circle cx="284" cy="184" r="6"/><circle cx="284" cy="184" r="2.6"/>
+    <path d="M296 148c15-10 35-10 45 2-15 9-35 9-45-2Z"/>
+    <path d="M212 184c11-8 25-8 33 2-12 8-27 6-33-2Z"/>
+    <path d="M320 176c14-13 33-13 43 0-12 13-31 13-43 0ZM320 176c-11 14-11 31 2 41 11-12 11-29-2-41Z" opacity=".8"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="230" cy="184" rx="122" ry="27"/>
+    <path d="M108 184c4 42 54 76 122 76s118-34 122-76"/><path d="M196 258v10q34 8 68 0v-10"/>
+    <ellipse cx="230" cy="184" rx="105" ry="22" stroke-width="1.6" opacity=".5"/>
+  </g>
+  <g stroke-width="2.1" opacity=".8"><use href="#chilli" transform="translate(48 208) rotate(-14)"/><use href="#chilli" transform="translate(404 224) rotate(26) scale(.85)"/></g>
+</svg>
+</div>
+  <div class="tail"><i></i><b></b><i></i></div>
+  <footer class="foot">
+    <span>Bangwela · บางเวลา</span>
+    <span class="mid">ราคาเป็นเงินบาท</span>
+    <span class="no">03 / 05</span>
+  </footer>
+</section>
+<section class="page">
+  <div class="frame"><span></span><span></span><span></span><span></span></div>
+  <header class="head"><div class="th">บางเวลา</div><div class="en">Bangwela</div><div class="est">อาหารไทย · ต้ม ยำ ทำ แกง</div></header><div class="rule"><i></i><b></b><i></i></div>
+  <div class="ptitle">
+    <div class="th">นึ่ง · ผัด · จานข้าว</div>
+    <div class="en">Steamed · Stir-fried · Rice</div>
+  </div>
+  <div class="body dense"><div class="col"><div class="sec"><div class="sec-h"><div class="th">นึ่ง</div><div class="en">Steamed</div><div class="bar"></div></div><div class="item"><span class="n">ปลากะพงนึ่งมะนาว</span><span class="dots"></span><span class="p">395</span></div><div class="item"><span class="n">ปลากะพงนึ่งบ๊วย</span><span class="dots"></span><span class="p">395</span></div><div class="item"><span class="n">ปลากะพงนึ่งซีอิ๊ว</span><span class="dots"></span><span class="p">395</span></div><div class="item"><span class="n">ปลาหมึกนึ่งมะนาว</span><span class="dots"></span><span class="p">265</span></div></div><div class="sec"><div class="sec-h"><div class="th">ผัด</div><div class="en">Stir-fried</div><div class="bar"></div></div><div class="item"><span class="n">ผัดฉ่าปลาคัง</span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">ผัดฉ่าทะเล</span><span class="dots"></span><span class="p">195</span></div><div class="item"><span class="n">หมึกผัดผงกะหรี่</span><span class="dots"></span><span class="p">195</span></div><div class="item"><span class="n">กุ้งผัดผงกะหรี่</span><span class="dots"></span><span class="p">195</span></div><div class="item"><span class="n">ทะเลผัดผงกะหรี่</span><span class="dots"></span><span class="p">195</span></div><div class="item"><span class="n">ไก่ผัดเม็ดมะม่วงหิมพานต์</span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">หมึกผัดไข่เค็ม</span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">เย็นตาโฟผัดแห้ง</span><span class="dots"></span><span class="p">185</span></div><div class="item"><span class="n">ผัดขี้เมาทะเล</span><span class="dots"></span><span class="p">195</span></div><div class="item"><span class="n">ผัดขี้เมาหมู</span><span class="dots"></span><span class="p">145</span></div><div class="item"><span class="n">กะหล่ำปลีผัดน้ำปลา</span><span class="dots"></span><span class="p">115</span></div></div></div><div class="col"><div class="sec"><div class="sec-h"><div class="th">เมนูจานข้าว</div><div class="en">Rice Dishes</div><div class="bar"></div></div><div class="item"><span class="n">ข้าวผัดหมู<span class="sz">เล็ก / ใหญ่</span></span><span class="dots"></span><span class="p">85 / 195</span></div><div class="item"><span class="n">ข้าวผัดกุ้ง<span class="sz">เล็ก / ใหญ่</span></span><span class="dots"></span><span class="p">105 / 255</span></div><div class="item"><span class="n">ข้าวผัดทะเล<span class="sz">เล็ก / ใหญ่</span></span><span class="dots"></span><span class="p">105 / 255</span></div><div class="item"><span class="n">ข้าวกะเพราหมู</span><span class="dots"></span><span class="p">85</span></div><div class="item"><span class="n">ข้าวกะเพราไก่</span><span class="dots"></span><span class="p">85</span></div><div class="item"><span class="n">ข้าวกะเพรากุ้ง</span><span class="dots"></span><span class="p">95</span></div><div class="item"><span class="n">ข้าวกะเพราเนื้อ</span><span class="dots"></span><span class="p">105</span></div><div class="item"><span class="n">ข้าวหมูทอดกระเทียม</span><span class="dots"></span><span class="p">85</span></div><div class="item"><span class="n">มาม่าผัดขี้เมาหมู</span><span class="dots"></span><span class="p">125</span></div><div class="item"><span class="n">มาม่าผัดขี้เมาทะเล</span><span class="dots"></span><span class="p">155</span></div></div></div></div>
+  <div class="art"><svg preserveAspectRatio="xMidYMid meet" style="max-width:78%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 280" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="chilli"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g></defs>
+  <g stroke-width="2.1" opacity=".65">
+    <path d="M244 80c-11-17 11-25 0-42s9-25 0-40"/><path d="M298 72c-12-19 12-28 0-47s10-28 0-45"/>
+  </g>
+  <g stroke-width="2.6" transform="translate(0 8)">
+    <path d="M158 150c30-46 100-56 160-42 40 10 66 26 80 40-14 14-40 30-80 40-60 14-130 4-160-38Z"/>
+    <path d="M158 150 112 114c-9 22-9 50 0 72Z"/>
+    <path d="M212 110c24-24 62-28 88-16" stroke-width="2.1"/>
+    <path d="M290 186c22 10 30 24 26 36" stroke-width="2.1"/>
+    <path d="M348 120c-13 24-13 36 0 60" stroke-width="2.1"/>
+    <circle cx="372" cy="138" r="9"/><circle cx="372" cy="138" r="3.2" fill="currentColor" stroke="none"/>
+    <path d="M240 130c14 8 30 12 46 12M232 164c16-6 34-8 50-6" stroke-width="1.7" opacity=".65"/>
+  </g>
+  <g stroke-width="2.1" opacity=".85">
+    <g transform="translate(198 218)"><circle r="19"/><circle r="13"/><path d="M0-13v26M-13 0h26M-9-9 9 9M9-9-9 9" opacity=".75"/></g>
+    <g transform="translate(302 224) scale(.8)"><circle r="19"/><circle r="13"/><path d="M0-13v26M-13 0h26M-9-9 9 9M9-9-9 9" opacity=".75"/></g>
+    <use href="#chilli" transform="translate(376 196) rotate(28) scale(.8)"/>
+    <path d="M144 214c14-13 33-13 43 0-12 13-31 13-43 0ZM144 214c-11 14-11 31 2 41 11-12 11-29-2-41Z" opacity=".8"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="268" cy="166" rx="240" ry="74"/>
+    <ellipse cx="268" cy="166" rx="220" ry="62" stroke-width="1.6" opacity=".5"/>
+  </g>
+</svg>
+</div>
+  <div class="tail"><i></i><b></b><i></i></div>
+  <footer class="foot">
+    <span>Bangwela · บางเวลา</span>
+    <span class="mid">ราคาเป็นเงินบาท</span>
+    <span class="no">04 / 05</span>
+  </footer>
+</section>
+<section class="page">
+  <div class="frame"><span></span><span></span><span></span><span></span></div>
+  <header class="head"><div class="th">บางเวลา</div><div class="en">Bangwela</div><div class="est">อาหารไทย · ต้ม ยำ ทำ แกง</div></header><div class="rule"><i></i><b></b><i></i></div>
+  <div class="ptitle">
+    <div class="th">ย่าง · สลัด · สเต็ก</div>
+    <div class="en">Grilled · Salad · Steak</div>
+  </div>
+  <div class="body"><div class="col"><div class="sec"><div class="sec-h"><div class="th">ย่าง</div><div class="en">From the Grill</div><div class="bar"></div></div><div class="item"><span class="n">คอหมูย่าง</span><span class="dots"></span><span class="p">165</span></div><div class="item"><span class="n">เนื้อย่าง</span><span class="dots"></span><span class="p">245</span></div><div class="item"><span class="n">เนื้อพิคานย่าง</span><span class="dots"></span><span class="p">395</span></div></div></div><div class="col"><div class="sec"><div class="sec-h"><div class="th">สลัด / สเต็ก</div><div class="en">Salad &amp; Steak</div><div class="bar"></div></div><div class="item"><span class="n">สลัดงาคั่วบางเวลา</span><span class="dots"></span><span class="p">125</span></div><div class="item"><span class="n">ซีซาร์สลัด</span><span class="dots"></span><span class="p">145</span></div><div class="item"><span class="n">แซลม่อนสเต็ก</span><span class="dots"></span><span class="p">295</span></div><div class="item"><span class="n">ไส้กรอกรวมย่าง BBQ</span><span class="dots"></span><span class="p">235</span></div></div></div></div>
+  <div class="art"><svg preserveAspectRatio="xMidYMid meet" style="max-width:88%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 320" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="flame"><path d="M0 0c-16-6-23-24-13-41 2 10 8 12 10 8-4-14 2-26 15-33-7 17 8 23 10 37 2 16-8 27-22 29Z"/></g></defs>
+  <g stroke-width="2" opacity=".55">
+    <path d="M150 92c-10-14 10-22 0-36s8-22 0-34"/><path d="M230 80c-11-16 11-24 0-40s9-24 0-38"/><path d="M310 92c-10-14 10-22 0-36s8-22 0-34"/>
+  </g>
+  <g stroke-width="2.4">
+    <path d="M146 172c-8-18 10-30 32-30 26-2 56 2 68 12 10 10 2 24-16 26-28 6-74 4-84-8Z"/>
+    <path d="M162 154c14 10 34 14 54 14M176 142c14 10 34 14 54 14M156 166c14 10 32 12 52 12" stroke-width="1.7" opacity=".65"/>
+    <path d="M282 168c-6-14 6-24 22-24 20-2 40 2 46 10 6 8-2 18-14 20-20 4-48 4-54-6Z" opacity=".9"/>
+    <path d="M296 154c12 8 28 12 42 12M290 162c12 8 28 12 42 12" stroke-width="1.7" opacity=".65"/>
+  </g>
+  <g stroke-width="2.9">
+    <path d="M72 188h316"/>
+    <g stroke-width="2" opacity=".8"><path d="M96 181v14M128 181v14M160 181v14M192 181v14M224 181v14M256 181v14M288 181v14M320 181v14M352 181v14"/></g>
+    <path d="M96 196h268l-24 66q-110 16-220 0Z"/>
+    <path d="M120 264 104 302M340 264l16 38"/>
+  </g>
+  <g stroke-width="2.1" opacity=".85">
+    <use href="#flame" transform="translate(172 250) scale(.9)"/>
+    <use href="#flame" transform="translate(232 256) scale(1.05)"/>
+    <use href="#flame" transform="translate(292 250) scale(.9)"/>
+  </g>
+</svg>
+</div>
+  <div class="tail"><i></i><b></b><i></i></div>
+  <footer class="foot">
+    <span>Bangwela · บางเวลา</span>
+    <span class="mid">ราคาเป็นเงินบาท</span>
+    <span class="no">05 / 05</span>
+  </footer>
+</section>
+</body>
+</html>

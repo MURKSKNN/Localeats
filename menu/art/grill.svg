@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 320" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="flame"><path d="M0 0c-16-6-23-24-13-41 2 10 8 12 10 8-4-14 2-26 15-33-7 17 8 23 10 37 2 16-8 27-22 29Z"/></g></defs>
+  <g stroke-width="2" opacity=".55">
+    <path d="M150 92c-10-14 10-22 0-36s8-22 0-34"/><path d="M230 80c-11-16 11-24 0-40s9-24 0-38"/><path d="M310 92c-10-14 10-22 0-36s8-22 0-34"/>
+  </g>
+  <g stroke-width="2.4">
+    <path d="M146 172c-8-18 10-30 32-30 26-2 56 2 68 12 10 10 2 24-16 26-28 6-74 4-84-8Z"/>
+    <path d="M162 154c14 10 34 14 54 14M176 142c14 10 34 14 54 14M156 166c14 10 32 12 52 12" stroke-width="1.7" opacity=".65"/>
+    <path d="M282 168c-6-14 6-24 22-24 20-2 40 2 46 10 6 8-2 18-14 20-20 4-48 4-54-6Z" opacity=".9"/>
+    <path d="M296 154c12 8 28 12 42 12M290 162c12 8 28 12 42 12" stroke-width="1.7" opacity=".65"/>
+  </g>
+  <g stroke-width="2.9">
+    <path d="M72 188h316"/>
+    <g stroke-width="2" opacity=".8"><path d="M96 181v14M128 181v14M160 181v14M192 181v14M224 181v14M256 181v14M288 181v14M320 181v14M352 181v14"/></g>
+    <path d="M96 196h268l-24 66q-110 16-220 0Z"/>
+    <path d="M120 264 104 302M340 264l16 38"/>
+  </g>
+  <g stroke-width="2.1" opacity=".85">
+    <use href="#flame" transform="translate(172 250) scale(.9)"/>
+    <use href="#flame" transform="translate(232 256) scale(1.05)"/>
+    <use href="#flame" transform="translate(292 250) scale(.9)"/>
+  </g>
+</svg>

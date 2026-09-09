@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 280" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="chilli"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g></defs>
+  <g stroke-width="2.1" opacity=".65">
+    <path d="M244 80c-11-17 11-25 0-42s9-25 0-40"/><path d="M298 72c-12-19 12-28 0-47s10-28 0-45"/>
+  </g>
+  <g stroke-width="2.6" transform="translate(0 8)">
+    <path d="M158 150c30-46 100-56 160-42 40 10 66 26 80 40-14 14-40 30-80 40-60 14-130 4-160-38Z"/>
+    <path d="M158 150 112 114c-9 22-9 50 0 72Z"/>
+    <path d="M212 110c24-24 62-28 88-16" stroke-width="2.1"/>
+    <path d="M290 186c22 10 30 24 26 36" stroke-width="2.1"/>
+    <path d="M348 120c-13 24-13 36 0 60" stroke-width="2.1"/>
+    <circle cx="372" cy="138" r="9"/><circle cx="372" cy="138" r="3.2" fill="currentColor" stroke="none"/>
+    <path d="M240 130c14 8 30 12 46 12M232 164c16-6 34-8 50-6" stroke-width="1.7" opacity=".65"/>
+  </g>
+  <g stroke-width="2.1" opacity=".85">
+    <g transform="translate(198 218)"><circle r="19"/><circle r="13"/><path d="M0-13v26M-13 0h26M-9-9 9 9M9-9-9 9" opacity=".75"/></g>
+    <g transform="translate(302 224) scale(.8)"><circle r="19"/><circle r="13"/><path d="M0-13v26M-13 0h26M-9-9 9 9M9-9-9 9" opacity=".75"/></g>
+    <use href="#chilli" transform="translate(376 196) rotate(28) scale(.8)"/>
+    <path d="M144 214c14-13 33-13 43 0-12 13-31 13-43 0ZM144 214c-11 14-11 31 2 41 11-12 11-29-2-41Z" opacity=".8"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="268" cy="166" rx="240" ry="74"/>
+    <ellipse cx="268" cy="166" rx="220" ry="62" stroke-width="1.6" opacity=".5"/>
+  </g>
+</svg>
