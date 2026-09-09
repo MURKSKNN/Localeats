@@ -145,6 +145,8 @@ PAGES = [
         title_th="ของกินเล่น &amp; ทอด",
         title_en="Snacks &amp; Fried",
         art="fried.svg",
+        photo="01-fried",
+        caption="เอ็นไก่ทอด",
         art_w="66%",
         cols=[
             [("ของกินเล่น", "Snacks &amp; Bites", SNACKS)],
@@ -155,6 +157,8 @@ PAGES = [
         title_th="ส้มตำ &amp; ยำ",
         title_en="Som Tam &amp; Thai Salads",
         art="somtam.svg",
+        photo="02-somtam",
+        caption="ส้มตำไทย",
         art_w="60%",
         cols=[
             [("ส้มตำ", "Som Tam", YUM[:3]), ("ยำ", "Thai Salads", YUM[3:10])],
@@ -165,6 +169,8 @@ PAGES = [
         title_th="ต้ม &amp; แกง",
         title_en="Soups &amp; Curries",
         art="tomyum.svg",
+        photo="03-tomyum",
+        caption="ต้มยำกุ้งแม่น้ำ",
         art_w="64%",
         cols=[
             [("ต้ม", "Soups", SOUP)],
@@ -175,6 +181,8 @@ PAGES = [
         title_th="นึ่ง · ผัด · จานข้าว",
         title_en="Steamed · Stir-fried · Rice",
         art="fish.svg",
+        photo="04-steamed-fish",
+        caption="ปลากะพงนึ่งมะนาว",
         art_w="78%",
         dense=True,
         cols=[
@@ -186,6 +194,8 @@ PAGES = [
         title_th="ย่าง · สลัด · สเต็ก",
         title_en="Grilled · Salad · Steak",
         art="grill.svg",
+        photo="05-grilled",
+        caption="คอหมูย่าง",
         art_w="88%",
         cols=[
             [("ย่าง", "From the Grill", GRILLED)],
@@ -292,6 +302,21 @@ body{ font-family:Kanit,"Noto Sans Thai",sans-serif; -webkit-font-smoothing:anti
   padding:10mm 0 2mm;color:var(--gold);opacity:.9}
 .art svg{width:auto;height:100%;max-height:100%;object-fit:contain}
 
+/* รูปถ่ายจริง: ขอบละลายหายเข้าไปในพื้นดำ */
+.plate{margin:0;width:100%;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5mm}
+.plate img{flex:1 1 auto;min-height:0;width:auto;max-width:80%;object-fit:contain;
+  filter:saturate(.74) contrast(1.06) brightness(.95);
+  -webkit-mask-image:radial-gradient(ellipse 64% 62% at 50% 48%,
+    #000 44%, rgba(0,0,0,.62) 70%, rgba(0,0,0,.16) 86%, transparent 96%);
+  mask-image:radial-gradient(ellipse 64% 62% at 50% 48%,
+    #000 44%, rgba(0,0,0,.62) 70%, rgba(0,0,0,.16) 86%, transparent 96%)}
+.plate figcaption{flex:none;display:flex;align-items:center;gap:4.5mm;opacity:.95}
+.plate .no{font-family:Cormorant,serif;font-size:3.1mm;letter-spacing:.36em;
+  text-indent:.36em;text-transform:uppercase;color:var(--gold)}
+.plate .tick{width:9mm;height:.3mm;background:rgba(201,162,77,.55)}
+.plate .ttl{font-weight:300;font-size:3.9mm;letter-spacing:.10em;color:var(--dim)}
+
 /* ---------- ท้ายกระดาษ ---------- */
 .tail{flex:none;display:flex;align-items:center;justify-content:center;gap:2.6mm;margin:0 0 7mm}
 .tail i{width:1.1mm;height:1.1mm;border-radius:50%;background:var(--gold);opacity:.55}
@@ -352,13 +377,35 @@ def head_html():
     )
 
 
-def page_html(idx, page, total):
+def find_photo(stem):
+    """คืน path ของรูปถ่ายใน photos/ ถ้ามี (รองรับ .jpg .jpeg .png .webp)"""
+    for ext in (".jpg", ".jpeg", ".png", ".webp"):
+        rel = "photos/" + stem + ext
+        if os.path.exists(os.path.join(HERE, rel)):
+            return rel
+    return None
+
+
+def artwork_html(idx, page):
+    """ใช้รูปถ่ายจริงถ้าวางไว้ใน photos/ ไม่งั้นใช้ภาพลายเส้น"""
+    shot = find_photo(page["photo"])
+    if shot:
+        return (
+            f'<figure class="plate"><img src="{shot}" alt="{page["caption"]}">'
+            f'<figcaption><span class="no">Pl. {idx:02d}</span>'
+            f'<span class="tick"></span>'
+            f'<span class="ttl">{page["caption"]}</span></figcaption></figure>'
+        )
     art_path = os.path.join(HERE, "art", page["art"])
     with open(art_path, encoding="utf-8") as fh:
         art = fh.read()
-    art = art.replace(
+    return art.replace(
         "<svg ", f'<svg preserveAspectRatio="xMidYMid meet" style="max-width:{page["art_w"]}" ', 1
     )
+
+
+def page_html(idx, page, total):
+    art = artwork_html(idx, page)
     dense = " dense" if page.get("dense") else ""
     cols = "".join(
         f'<div class="col">{"".join(section_html(s) for s in col)}</div>'
@@ -424,6 +471,11 @@ if __name__ == "__main__":
     with open(html_path, "w", encoding="utf-8") as fh:
         fh.write(build_html())
     print("wrote", html_path)
+    missing = [p["photo"] for p in PAGES if not find_photo(p["photo"])]
+    if missing:
+        print("ยังไม่มีรูปถ่ายใน photos/ (ใช้ภาพลายเส้นแทน):", ", ".join(missing))
+    else:
+        print("ใช้รูปถ่ายจริงครบทั้ง 5 หน้า")
     if "--pdf" in sys.argv:
         pdf_path = os.path.join(HERE, "bangwela-menu.pdf")
         build_pdf(html_path, pdf_path)
