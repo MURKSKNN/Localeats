@@ -5,6 +5,8 @@
 วิธีใช้:
     python3 build_menu.py            # สร้าง bangwela-menu.html
     python3 build_menu.py --pdf      # สร้าง HTML + PDF (ต้องมี playwright)
+    python3 build_menu.py --pdf --bleed          # เวอร์ชันโรงพิมพ์ ตัดตก 3 มม. + เส้นตัด
+    python3 build_menu.py --pdf --bleed --cmyk   # + แปลงเป็น CMYK (ต้องมี ghostscript)
 
 แก้ชื่อเมนู/ราคา ได้ที่ตัวแปร PAGES ด้านล่างนี้ แล้วรันใหม่
 """
@@ -283,15 +285,15 @@ body{ font-family:Kanit,"Noto Sans Thai",sans-serif; -webkit-font-smoothing:anti
 .sec-h .th em{font-style:normal;font-weight:300;font-size:.66em;color:var(--dim)}
 .sec-h .en{margin-top:.6mm;font-family:Cormorant,serif;font-size:3.2mm;letter-spacing:.42em;
   text-transform:uppercase;color:var(--gold)}
-.sec-h .bar{margin-top:2.6mm;height:.3mm;background:linear-gradient(90deg,rgba(201,162,77,.85),rgba(201,162,77,0))}
+.sec-h .bar{margin-top:2.6mm;height:0;border-top:.3mm solid rgba(201,162,77,.38)}
 
 .item{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 4.8mm}
 .body.dense .item{margin-bottom:4.0mm}
 .body.dense .sec+.sec{margin-top:8mm}
 .item .n{font-weight:300;font-size:5.4mm;line-height:1.35;white-space:nowrap}
 .item .n em{font-style:normal;font-size:.82em;color:var(--dim)}
-.item .dots{flex:1 1 auto;height:.28mm;background:repeating-linear-gradient(90deg,var(--faint) 0 .5mm,transparent .5mm 2mm);
-  transform:translateY(-1.1mm);min-width:6mm}
+.item .dots{flex:1 1 auto;min-width:6mm;transform:translateY(-1.2mm);color:var(--faint)}
+.item .dots svg{display:block;width:100%;height:1.4mm;overflow:visible}
 .item .p{font-weight:300;font-size:5.4mm;font-variant-numeric:tabular-nums;white-space:nowrap}
 .item .sz{display:block;font-family:Cormorant,serif;font-style:italic;font-size:3.1mm;
   letter-spacing:.06em;color:var(--dim);margin-top:-.6mm}
@@ -328,6 +330,27 @@ body{ font-family:Kanit,"Noto Sans Thai",sans-serif; -webkit-font-smoothing:anti
 .foot .no{color:var(--gold)}
 .foot .mid{font-style:italic;letter-spacing:.12em;text-transform:none}
 
+/* ---------- โหมดโรงพิมพ์: ตัดตก 3 มม. + เส้นตัด ---------- */
+.sheet{position:relative;width:317mm;height:440mm;background:#fff;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  break-after:page;page-break-after:always}
+.sheet:last-child{break-after:auto;page-break-after:auto}
+.sheet .page{width:303mm;height:426mm;padding:22mm 25mm 17mm;
+  break-after:auto;page-break-after:auto;box-shadow:none}
+.marks span{position:absolute;background:#000}
+.marks .h{width:7mm;height:.25mm}
+.marks .v{width:.25mm;height:7mm}
+.marks .t{top:calc(10mm - .125mm)}
+.marks .b{top:calc(430mm - .125mm)}
+.marks .l{left:0}
+.marks .r{left:310mm}
+.marks .vl{left:calc(10mm - .125mm)}
+.marks .vr{left:calc(307mm - .125mm)}
+.marks .vt{top:0}
+.marks .vb{top:433mm}
+.slug{position:absolute;left:0;right:0;top:434.2mm;text-align:center;
+  font-family:Cormorant,serif;font-size:2.4mm;letter-spacing:.28em;color:#666}
+
 @media screen{
   body{padding:26px 0;display:flex;flex-direction:column;align-items:center;gap:26px}
   .page{box-shadow:0 18px 60px rgba(0,0,0,.75)}
@@ -346,7 +369,9 @@ def item_html(it):
     return (
         '<div class="item">'
         f'<span class="n">{name}{sz_n}</span>'
-        '<span class="dots"></span>'
+        '<span class="dots"><svg><line x1="0" y1="2.6" x2="100%" y2="2.6" '
+        'stroke="currentColor" stroke-width="1.25" stroke-linecap="round" '
+        'stroke-dasharray="0.01 4.6"/></svg></span>'
         f'<span class="p">{price}</span>'
         "</div>"
     )
@@ -404,14 +429,32 @@ def artwork_html(idx, page):
     )
 
 
-def page_html(idx, page, total):
+MARKS = (
+    '<div class="marks">'
+    '<span class="h t l"></span><span class="h t r"></span>'
+    '<span class="h b l"></span><span class="h b r"></span>'
+    '<span class="v vl vt"></span><span class="v vr vt"></span>'
+    '<span class="v vl vb"></span><span class="v vr vb"></span>'
+    "</div>"
+)
+
+
+def page_html(idx, page, total, bleed=False):
     art = artwork_html(idx, page)
     dense = " dense" if page.get("dense") else ""
     cols = "".join(
         f'<div class="col">{"".join(section_html(s) for s in col)}</div>'
         for col in page["cols"]
     )
-    return f"""<section class="page">
+    sheet_open, sheet_close = "", ""
+    if bleed:
+        slug = (
+            f'<div class="slug">BANGWELA · MENU A3 · P{idx:02d}/{total:02d} · '
+            f"TRIM 297 × 420 MM · BLEED 3 MM</div>"
+        )
+        sheet_open = f'<div class="sheet">{MARKS}{slug}'
+        sheet_close = "</div>"
+    return sheet_open + f"""<section class="page">
   <div class="frame"><span></span><span></span><span></span><span></span></div>
   {head_html()}
   <div class="ptitle">
@@ -426,17 +469,19 @@ def page_html(idx, page, total):
     <span class="mid">ราคาเป็นเงินบาท</span>
     <span class="no">{idx:02d} / {total:02d}</span>
   </footer>
-</section>"""
+</section>""" + sheet_close
 
 
-def build_html():
-    pages = "\n".join(page_html(i + 1, p, len(PAGES)) for i, p in enumerate(PAGES))
+def build_html(bleed=False):
+    pages = "\n".join(page_html(i + 1, p, len(PAGES), bleed) for i, p in enumerate(PAGES))
+    extra = "@page{size:317mm 440mm}\nbody{background:#fff}" if bleed else ""
     return f"""<!doctype html>
 <html lang="th">
 <head>
 <meta charset="utf-8">
 <title>เมนู · ร้านบางเวลา</title>
-<style>{CSS}</style>
+<style>{CSS}
+{extra}</style>
 </head>
 <body>
 {pages}
@@ -445,7 +490,7 @@ def build_html():
 """
 
 
-def build_pdf(html_path, pdf_path):
+def build_pdf(html_path, pdf_path, size=("297mm", "420mm")):
     from playwright.sync_api import sync_playwright
 
     exe = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
@@ -458,18 +503,32 @@ def build_pdf(html_path, pdf_path):
         page.wait_for_timeout(1200)
         page.pdf(
             path=pdf_path,
-            width="297mm",
-            height="420mm",
+            width=size[0],
+            height=size[1],
             print_background=True,
             margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
         )
         browser.close()
 
 
+def to_cmyk(src, dst):
+    """แปลงเป็น CMYK ด้วย Ghostscript (หมึกรวมสูงสุด ~295%) — ใช้เมื่อโรงพิมพ์ขอ"""
+    import subprocess
+
+    subprocess.run(
+        ["gs", "-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
+         "-dColorConversionStrategy=/CMYK", "-dProcessColorModel=/DeviceCMYK",
+         "-dPDFSETTINGS=/prepress", "-sOutputFile=" + dst, src],
+        check=True,
+    )
+
+
 if __name__ == "__main__":
-    html_path = os.path.join(HERE, "bangwela-menu.html")
+    bleed = "--bleed" in sys.argv
+    stem = "bangwela-menu-print" if bleed else "bangwela-menu"
+    html_path = os.path.join(HERE, stem + ".html")
     with open(html_path, "w", encoding="utf-8") as fh:
-        fh.write(build_html())
+        fh.write(build_html(bleed))
     print("wrote", html_path)
     missing = [p["photo"] for p in PAGES if not find_photo(p["photo"])]
     if missing:
@@ -477,6 +536,11 @@ if __name__ == "__main__":
     else:
         print("ใช้รูปถ่ายจริงครบทั้ง 5 หน้า")
     if "--pdf" in sys.argv:
-        pdf_path = os.path.join(HERE, "bangwela-menu.pdf")
-        build_pdf(html_path, pdf_path)
+        pdf_path = os.path.join(HERE, stem + ".pdf")
+        size = ("317mm", "440mm") if bleed else ("297mm", "420mm")
+        build_pdf(html_path, pdf_path, size)
         print("wrote", pdf_path)
+        if "--cmyk" in sys.argv:
+            cmyk_path = os.path.join(HERE, stem + "-cmyk.pdf")
+            to_cmyk(pdf_path, cmyk_path)
+            print("wrote", cmyk_path)
