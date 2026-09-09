@@ -3,12 +3,13 @@
 """สร้างเมนูร้านบางเวลา ขนาด A3 (5 หน้า) เป็นไฟล์ HTML และ PDF
 
 วิธีใช้:
-    python3 build_menu.py            # สร้าง bangwela-menu.html
-    python3 build_menu.py --pdf      # สร้าง HTML + PDF (ต้องมี playwright)
+    python3 build_menu.py                        # สร้าง HTML
+    python3 build_menu.py --pdf                  # + PDF ขนาด A3 พอดีขอบ
     python3 build_menu.py --pdf --bleed          # เวอร์ชันโรงพิมพ์ ตัดตก 3 มม. + เส้นตัด
     python3 build_menu.py --pdf --bleed --cmyk   # + แปลงเป็น CMYK (ต้องมี ghostscript)
 
-แก้ชื่อเมนู/ราคา ได้ที่ตัวแปร PAGES ด้านล่างนี้ แล้วรันใหม่
+แก้ชื่ออาหาร/ราคา ได้ที่ลิสต์ด้านล่าง แล้วรันใหม่
+วางรูปถ่ายชื่อ p1a, p1b, p2a … p5b ไว้ใน photos/ เพื่อใช้รูปจริงแทนภาพลายเส้น
 """
 
 import os
@@ -17,7 +18,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # --------------------------------------------------------------------------
-# ข้อมูลเมนู  ── (ชื่ออาหาร, ราคา, หมายเหตุขนาด)
+# ข้อมูลเมนู  ── (ชื่ออาหาร, ราคา[, หมายเหตุขนาด])
 # --------------------------------------------------------------------------
 
 SNACKS = [
@@ -52,10 +53,13 @@ FRIED = [
     ("กระดูกอ่อนคั่วพริกเกลือ", "175"),
 ]
 
-YUM = [
+SOMTAM = [
     ("ส้มตำไทย", "65"),
     ("ส้มตำปูปลาร้า", "65"),
     ("ตำข้าวโพดไข่เค็ม", "75"),
+]
+
+YUM = [
     ("ลาบหมู", "95"),
     ("ยำคอหมูย่าง", "125"),
     ("ยำคะน้ากุ้งสด", "155"),
@@ -142,200 +146,197 @@ STEAK = [
     ("ไส้กรอกรวมย่าง BBQ", "235"),
 ]
 
+# --------------------------------------------------------------------------
+# โครงหน้า — บล็อกในคอลัมน์
+#   ("sec",   ไอคอน, ชื่อไทย, ชื่ออังกฤษ, รายการ)
+#   ("photo", ชื่อไฟล์ใน photos/, ภาพลายเส้นสำรอง)
+# --------------------------------------------------------------------------
+
 PAGES = [
     dict(
-        title_th="ของกินเล่น &amp; ทอด",
-        title_en="Snacks &amp; Fried",
-        art="fried.svg",
-        photo="01-fried",
-        caption="เอ็นไก่ทอด",
-        art_w="66%",
+        label="ของกินเล่น · ทอด",
         cols=[
-            [("ของกินเล่น", "Snacks &amp; Bites", SNACKS)],
-            [("ทอด", "Deep Fried", FRIED)],
+            [("sec", "blossom", "ของกินเล่น", "Snacks &amp; Bites", SNACKS),
+             ("photo", "p1a", "fried.svg")],
+            [("sec", "pan", "ทอด", "Deep Fried", FRIED),
+             ("photo", "p1b", "fish.svg")],
         ],
     ),
     dict(
-        title_th="ส้มตำ &amp; ยำ",
-        title_en="Som Tam &amp; Thai Salads",
-        art="somtam.svg",
-        photo="02-somtam",
-        caption="ส้มตำไทย",
-        art_w="60%",
+        label="ส้มตำ · ยำ",
         cols=[
-            [("ส้มตำ", "Som Tam", YUM[:3]), ("ยำ", "Thai Salads", YUM[3:10])],
-            [("ยำ <em>(ต่อ)</em>", "Thai Salads · continued", YUM[10:])],
+            [("sec", "chilli", "ส้มตำ", "Som Tam", SOMTAM),
+             ("photo", "p2a", "somtam.svg"),
+             ("sec", "leaf", "ยำ", "Thai Salads", YUM[:7])],
+            [("sec", "leaf", "ยำ <em>(ต่อ)</em>", "Thai Salads", YUM[7:]),
+             ("photo", "p2b", "yum.svg")],
         ],
     ),
     dict(
-        title_th="ต้ม &amp; แกง",
-        title_en="Soups &amp; Curries",
-        art="tomyum.svg",
-        photo="03-tomyum",
-        caption="ต้มยำกุ้งแม่น้ำ",
-        art_w="64%",
+        label="ต้ม · แกง",
         cols=[
-            [("ต้ม", "Soups", SOUP)],
-            [("แกง", "Curries", CURRY)],
+            [("sec", "bowl", "ต้ม", "Soups", SOUP),
+             ("photo", "p3a", "tomyum.svg")],
+            [("sec", "pot", "แกง", "Curries", CURRY),
+             ("photo", "p3b", "curry.svg")],
         ],
     ),
     dict(
-        title_th="นึ่ง · ผัด · จานข้าว",
-        title_en="Steamed · Stir-fried · Rice",
-        art="fish.svg",
-        photo="04-steamed-fish",
-        caption="ปลากะพงนึ่งมะนาว",
-        art_w="78%",
+        label="นึ่ง · ผัด · จานข้าว",
         dense=True,
         cols=[
-            [("นึ่ง", "Steamed", STEAMED), ("ผัด", "Stir-fried", STIRFRY)],
-            [("เมนูจานข้าว", "Rice Dishes", RICE)],
+            [("sec", "steamer", "นึ่ง", "Steamed", STEAMED),
+             ("photo", "p4a", "fish.svg"),
+             ("sec", "wok", "ผัด", "Stir-fried", STIRFRY)],
+            [("sec", "rice", "เมนูจานข้าว", "Rice Dishes", RICE),
+             ("photo", "p4b", "riceplate.svg")],
         ],
     ),
     dict(
-        title_th="ย่าง · สลัด · สเต็ก",
-        title_en="Grilled · Salad · Steak",
-        art="grill.svg",
-        photo="05-grilled",
-        caption="คอหมูย่าง",
-        art_w="88%",
+        label="ย่าง · สลัด · สเต็ก",
         cols=[
-            [("ย่าง", "From the Grill", GRILLED)],
-            [("สลัด / สเต็ก", "Salad &amp; Steak", STEAK)],
+            [("sec", "flame", "ย่าง", "From the Grill", GRILLED)],
+            [("sec", "cutlery", "สลัด / สเต็ก", "Salad &amp; Steak", STEAK)],
         ],
+        bands=[("photo", "p5a", "grill.svg"), ("photo", "p5b", "steak.svg")],
     ),
 ]
+
+TAGLINE = "เมนูหลากหลาย ให้ทุกมื้อเป็นมื้อพิเศษ"
+CLOSING = "ความอร่อย ที่ลงตัว…ทุกเมนู"
 
 # --------------------------------------------------------------------------
 # CSS
 # --------------------------------------------------------------------------
 
 CSS = """
-@font-face{font-family:Kanit;src:url(fonts/Kanit-200.ttf) format("truetype");font-weight:200;font-style:normal}
-@font-face{font-family:Kanit;src:url(fonts/Kanit-300.ttf) format("truetype");font-weight:300;font-style:normal}
-@font-face{font-family:Kanit;src:url(fonts/Kanit-400.ttf) format("truetype");font-weight:400;font-style:normal}
-@font-face{font-family:Kanit;src:url(fonts/Kanit-500.ttf) format("truetype");font-weight:500;font-style:normal}
-@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-300.ttf) format("truetype");font-weight:300;font-style:normal}
-@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-400.ttf) format("truetype");font-weight:400;font-style:normal}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-200.ttf) format("truetype");font-weight:200}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-300.ttf) format("truetype");font-weight:300}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-400.ttf) format("truetype");font-weight:400}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-500.ttf) format("truetype");font-weight:500}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-600.ttf) format("truetype");font-weight:600}
+@font-face{font-family:Kanit;src:url(fonts/Kanit-700.ttf) format("truetype");font-weight:700}
+@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-300.ttf) format("truetype");font-weight:300}
+@font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-400.ttf) format("truetype");font-weight:400}
 @font-face{font-family:Cormorant;src:url(fonts/CormorantGaramond-400i.ttf) format("truetype");font-weight:400;font-style:italic}
+@font-face{font-family:Charm;src:url(fonts/Charmonman-400.ttf) format("truetype");font-weight:400}
+@font-face{font-family:Charm;src:url(fonts/Charmonman-700.ttf) format("truetype");font-weight:700}
 
 :root{
-  --bg:#0a0a0b;
+  --bg:#09090a;
   --ink:#ffffff;
-  --dim:rgba(255,255,255,.52);
-  --faint:rgba(255,255,255,.20);
-  --gold:#c9a24d;
+  --dim:rgba(255,255,255,.55);
+  --hair:rgba(255,255,255,.18);
+  --gold:#cfa457;
 }
 
 @page{ size:297mm 420mm; margin:0 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#2a2a2c}
-body{ font-family:Kanit,"Noto Sans Thai",sans-serif; -webkit-font-smoothing:antialiased }
+body{font-family:Kanit,"Noto Sans Thai",sans-serif;-webkit-font-smoothing:antialiased}
 
 .page{
   position:relative;
-  width:297mm; height:420mm;
+  width:297mm;height:420mm;
   margin:0 auto;
-  padding:19mm 22mm 14mm;
+  padding:17mm 20mm 12mm;
   background:
-    radial-gradient(115% 78% at 50% 16%, #191a1d 0%, #0e0e10 46%, var(--bg) 78%);
+    radial-gradient(76% 40% at 20% 6%, rgba(126,90,40,.17) 0%, transparent 62%),
+    radial-gradient(120% 80% at 50% 24%, #17161a 0%, #0d0d0f 44%, var(--bg) 76%);
   color:var(--ink);
-  display:flex; flex-direction:column;
+  display:flex;flex-direction:column;
   overflow:hidden;
-  break-after:page; page-break-after:always;
+  break-after:page;page-break-after:always;
 }
 .page:last-child{break-after:auto;page-break-after:auto}
 
-/* กรอบเส้นบาง + มุมทอง */
-.frame{position:absolute;inset:11mm;border:.35mm solid rgba(201,162,77,.28);pointer-events:none}
-.frame span{position:absolute;width:9mm;height:9mm;border:.8mm solid var(--gold);opacity:.8}
-.frame span:nth-child(1){top:-1.1mm;left:-1.1mm;border-right:0;border-bottom:0}
-.frame span:nth-child(2){top:-1.1mm;right:-1.1mm;border-left:0;border-bottom:0}
-.frame span:nth-child(3){bottom:-1.1mm;left:-1.1mm;border-right:0;border-top:0}
-.frame span:nth-child(4){bottom:-1.1mm;right:-1.1mm;border-left:0;border-top:0}
-
 /* ---------- หัวกระดาษ ---------- */
-.head{text-align:center;flex:none}
-.head .th{font-weight:200;font-size:12.5mm;line-height:1.05;letter-spacing:.14em;text-indent:.14em}
-.head .en{margin-top:2.6mm;font-family:Cormorant,serif;font-weight:400;font-size:3.3mm;
-  letter-spacing:.72em;text-indent:.72em;text-transform:uppercase;color:var(--gold)}
-.head .est{margin-top:2.2mm;font-weight:200;font-size:3.5mm;
-  letter-spacing:.30em;text-indent:.30em;color:var(--dim)}
-
-.rule{display:flex;align-items:center;justify-content:center;gap:3mm;margin:6mm 0 0;flex:none}
-.rule i{display:block;height:.3mm;width:26mm;background:linear-gradient(90deg,transparent,rgba(201,162,77,.75))}
-.rule i+i{background:linear-gradient(90deg,rgba(201,162,77,.75),transparent)}
-.rule b{width:2.2mm;height:2.2mm;background:var(--gold);transform:rotate(45deg)}
-
-/* ---------- ชื่อหน้า ---------- */
-.ptitle{text-align:center;flex:none;margin-top:8mm}
-.ptitle .th{font-weight:300;font-size:11.5mm;line-height:1.2;letter-spacing:.05em}
-.ptitle .en{margin-top:1mm;font-family:Cormorant,serif;font-style:italic;font-size:4.6mm;
-  letter-spacing:.34em;text-indent:.34em;color:var(--gold);text-transform:uppercase}
+.head{flex:none;display:grid;grid-template-columns:auto 1fr auto;
+  align-items:start;gap:8mm;padding-bottom:6mm;border-bottom:.3mm solid var(--hair)}
+.head .mark .th{font-weight:700;font-size:15.5mm;line-height:1.05;letter-spacing:.01em}
+.head .mark .sub{margin-top:1.4mm;padding-left:1mm;font-weight:300;font-size:6.6mm;
+  line-height:1.15;letter-spacing:.03em;color:var(--gold)}
+.head .mark .tag{margin-top:2.6mm;padding-left:1.5mm;font-weight:200;font-size:3.7mm;
+  letter-spacing:.14em;color:var(--dim)}
+.head .script{align-self:center;justify-self:center;max-width:82mm;text-align:center;
+  font-family:Charm,cursive;font-weight:400;font-size:6.2mm;line-height:1.55;
+  color:var(--ink);transform:rotate(-3.2deg);opacity:.94}
+.head .corner{text-align:right;font-family:Cormorant,serif;font-weight:400;
+  font-size:3.7mm;line-height:1.85;letter-spacing:.42em;text-indent:.42em;
+  text-transform:uppercase;color:var(--ink);padding-top:2mm}
+.head .corner i{display:block;height:.3mm;width:26mm;margin:2.8mm 0 0 auto;
+  background:var(--gold);opacity:.85}
 
 /* ---------- เนื้อหา ---------- */
-.body{flex:none;margin-top:11mm;display:grid;grid-template-columns:1fr 1fr;gap:0 14mm}
-.col+.col{border-left:.3mm solid rgba(255,255,255,.13);padding-left:14mm}
+.body{flex:1 1 auto;min-height:0;margin-top:9mm;
+  display:grid;grid-template-columns:1fr 1fr;gap:0 13mm}
+.col{display:flex;flex-direction:column;min-width:0}
+.col+.col{border-left:.3mm solid rgba(255,255,255,.12);padding-left:13mm}
 
-.sec{margin-bottom:5mm}
-.sec+.sec{margin-top:10mm}
-.sec-h{margin-bottom:5.5mm}
-.sec-h .th{font-weight:400;font-size:6.8mm;letter-spacing:.06em;line-height:1.3}
-.sec-h .th em{font-style:normal;font-weight:300;font-size:.66em;color:var(--dim)}
-.sec-h .en{margin-top:.6mm;font-family:Cormorant,serif;font-size:3.2mm;letter-spacing:.42em;
-  text-transform:uppercase;color:var(--gold)}
-.sec-h .bar{margin-top:2.6mm;height:0;border-top:.3mm solid rgba(201,162,77,.38)}
+.sec{flex:none;max-width:105mm}
+.sec+.sec{margin-top:11mm}
+.sec-h{display:flex;align-items:center;gap:3.4mm;margin-bottom:6mm}
+.sec-h .ico{flex:none;width:8.6mm;height:8.6mm;color:var(--gold)}
+.sec-h .ico svg{display:block;width:100%;height:100%}
+.sec-h .th{font-weight:500;font-size:8mm;line-height:1.25;white-space:nowrap}
+.sec-h .th em{font-style:normal;font-weight:300;font-size:.58em;color:var(--dim)}
+.sec-h .rule{flex:1 1 auto;height:.3mm;background:var(--hair);min-width:5mm}
 
-.item{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 4.8mm}
-.body.dense .item{margin-bottom:4.0mm}
-.body.dense .sec+.sec{margin-top:8mm}
-.item .n{font-weight:300;font-size:5.4mm;line-height:1.35;white-space:nowrap}
+.item{display:flex;align-items:baseline;justify-content:space-between;
+  gap:6mm;margin:0 0 4.3mm}
+.item .n{font-weight:300;font-size:5.2mm;line-height:1.35}
 .item .n em{font-style:normal;font-size:.82em;color:var(--dim)}
-.item .dots{flex:1 1 auto;min-width:6mm;transform:translateY(-1.2mm);color:var(--faint)}
-.item .dots svg{display:block;width:100%;height:1.4mm;overflow:visible}
-.item .p{font-weight:300;font-size:5.4mm;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item .p{font-weight:300;font-size:5.2mm;font-variant-numeric:tabular-nums;
+  white-space:nowrap;text-align:right}
 .item .sz{display:block;font-family:Cormorant,serif;font-style:italic;font-size:3.1mm;
-  letter-spacing:.06em;color:var(--dim);margin-top:-.6mm}
-.item .p .sz{text-align:right}
+  letter-spacing:.06em;color:var(--dim);margin-top:-.8mm}
+.body.dense .item{margin-bottom:3.7mm}
+.body.dense .sec+.sec{margin-top:9mm}
 
-/* ---------- ภาพประกอบ ---------- */
-.art{flex:1 1 auto;min-height:62mm;display:flex;align-items:center;justify-content:center;
-  padding:10mm 0 2mm;color:var(--gold);opacity:.9}
-.art svg{width:auto;height:100%;max-height:100%;object-fit:contain}
+/* ---------- รูปอาหาร: ขอบละลายเข้าพื้นดำ ---------- */
+.shot{margin:8mm 0 0;flex:1 1 auto;min-height:36mm;
+  display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.shot img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;
+  filter:saturate(.88) contrast(1.05) brightness(.97);
+  -webkit-mask-image:radial-gradient(ellipse 66% 64% at 50% 50%,
+    #000 46%, rgba(0,0,0,.64) 72%, rgba(0,0,0,.16) 88%, transparent 97%);
+  mask-image:radial-gradient(ellipse 66% 64% at 50% 50%,
+    #000 46%, rgba(0,0,0,.64) 72%, rgba(0,0,0,.16) 88%, transparent 97%)}
+.shot svg{width:auto;height:100%;max-height:100%;max-width:90%;opacity:.9}
 
-/* รูปถ่ายจริง: ขอบละลายหายเข้าไปในพื้นดำ */
-.plate{margin:0;width:100%;height:100%;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:5mm}
-.plate img{flex:1 1 auto;min-height:0;width:auto;max-width:80%;object-fit:contain;
-  filter:saturate(.74) contrast(1.06) brightness(.95);
-  -webkit-mask-image:radial-gradient(ellipse 64% 62% at 50% 48%,
-    #000 44%, rgba(0,0,0,.62) 70%, rgba(0,0,0,.16) 86%, transparent 96%);
-  mask-image:radial-gradient(ellipse 64% 62% at 50% 48%,
-    #000 44%, rgba(0,0,0,.62) 70%, rgba(0,0,0,.16) 86%, transparent 96%)}
-.plate figcaption{flex:none;display:flex;align-items:center;gap:4.5mm;opacity:.95}
-.plate .no{font-family:Cormorant,serif;font-size:3.1mm;letter-spacing:.36em;
-  text-indent:.36em;text-transform:uppercase;color:var(--gold)}
-.plate .tick{width:9mm;height:.3mm;background:rgba(201,162,77,.55)}
-.plate .ttl{font-weight:300;font-size:3.9mm;letter-spacing:.10em;color:var(--dim)}
+/* ---------- แบนด์ภาพเต็มความกว้าง (หน้าที่รายการน้อย) ---------- */
+.body.hasbands{grid-template-rows:auto 1fr}
+.bands{grid-column:1/-1;min-height:0;margin-top:11mm;
+  display:flex;flex-direction:column;gap:9mm}
+.band{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;
+  color:var(--gold);overflow:hidden}
+.band img{width:100%;height:100%;object-fit:cover;
+  filter:saturate(.88) contrast(1.05) brightness(.97);
+  -webkit-mask-image:radial-gradient(ellipse 60% 78% at 50% 50%,
+    #000 48%, rgba(0,0,0,.6) 74%, rgba(0,0,0,.14) 90%, transparent 99%);
+  mask-image:radial-gradient(ellipse 60% 78% at 50% 50%,
+    #000 48%, rgba(0,0,0,.6) 74%, rgba(0,0,0,.14) 90%, transparent 99%)}
+.band svg{height:100%;width:auto;max-width:64%;opacity:.9}
 
 /* ---------- ท้ายกระดาษ ---------- */
-.tail{flex:none;display:flex;align-items:center;justify-content:center;gap:2.6mm;margin:0 0 7mm}
-.tail i{width:1.1mm;height:1.1mm;border-radius:50%;background:var(--gold);opacity:.55}
-.tail b{width:1.9mm;height:1.9mm;background:var(--gold);transform:rotate(45deg);opacity:.85}
-.foot{flex:none;display:flex;align-items:center;justify-content:space-between;
-  border-top:.3mm solid rgba(255,255,255,.13);padding-top:4mm;
-  font-family:Cormorant,serif;font-size:3.2mm;letter-spacing:.34em;
-  text-transform:uppercase;color:var(--dim)}
-.foot .no{color:var(--gold)}
-.foot .mid{font-style:italic;letter-spacing:.12em;text-transform:none}
+.foot{flex:none;margin-top:8mm;padding-top:4.5mm;
+  border-top:.3mm solid var(--hair);
+  display:flex;align-items:flex-end;justify-content:space-between;gap:10mm}
+.foot .closing{font-family:Charm,cursive;font-size:5.8mm;line-height:1.4;
+  color:var(--gold);transform:rotate(-2deg);transform-origin:left bottom}
+.foot .meta{text-align:right;font-family:Cormorant,serif;font-size:3.2mm;
+  letter-spacing:.32em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.foot .meta b{display:block;font-family:Kanit;font-weight:300;font-size:3.9mm;
+  letter-spacing:.08em;text-transform:none;color:var(--ink);margin-bottom:1.4mm}
+.foot .meta .no{color:var(--gold)}
 
 /* ---------- โหมดโรงพิมพ์: ตัดตก 3 มม. + เส้นตัด ---------- */
 .sheet{position:relative;width:317mm;height:440mm;background:#fff;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
   break-after:page;page-break-after:always}
 .sheet:last-child{break-after:auto;page-break-after:auto}
-.sheet .page{width:303mm;height:426mm;padding:22mm 25mm 17mm;
+.sheet .page{width:303mm;height:426mm;padding:20mm 23mm 15mm;
   break-after:auto;page-break-after:auto;box-shadow:none}
 .marks span{position:absolute;background:#000}
 .marks .h{width:7mm;height:.25mm}
@@ -361,74 +362,6 @@ body{ font-family:Kanit,"Noto Sans Thai",sans-serif; -webkit-font-smoothing:anti
 # ประกอบ HTML
 # --------------------------------------------------------------------------
 
-
-def item_html(it):
-    name, price = it[0], it[1]
-    size = it[2] if len(it) > 2 else None
-    sz_n = f'<span class="sz">{size}</span>' if size else ""
-    return (
-        '<div class="item">'
-        f'<span class="n">{name}{sz_n}</span>'
-        '<span class="dots"><svg><line x1="0" y1="2.6" x2="100%" y2="2.6" '
-        'stroke="currentColor" stroke-width="1.25" stroke-linecap="round" '
-        'stroke-dasharray="0.01 4.6"/></svg></span>'
-        f'<span class="p">{price}</span>'
-        "</div>"
-    )
-
-
-def section_html(sec):
-    th, en, items = sec
-    head = ""
-    if th:
-        head = (
-            '<div class="sec-h">'
-            f'<div class="th">{th}</div>'
-            f'<div class="en">{en}</div>'
-            '<div class="bar"></div>'
-            "</div>"
-        )
-    return f'<div class="sec">{head}{"".join(item_html(i) for i in items)}</div>'
-
-
-def head_html():
-    return (
-        '<header class="head">'
-        '<div class="th">บางเวลา</div>'
-        '<div class="en">Bangwela</div>'
-        '<div class="est">อาหารไทย · ต้ม ยำ ทำ แกง</div>'
-        "</header>"
-        '<div class="rule"><i></i><b></b><i></i></div>'
-    )
-
-
-def find_photo(stem):
-    """คืน path ของรูปถ่ายใน photos/ ถ้ามี (รองรับ .jpg .jpeg .png .webp)"""
-    for ext in (".jpg", ".jpeg", ".png", ".webp"):
-        rel = "photos/" + stem + ext
-        if os.path.exists(os.path.join(HERE, rel)):
-            return rel
-    return None
-
-
-def artwork_html(idx, page):
-    """ใช้รูปถ่ายจริงถ้าวางไว้ใน photos/ ไม่งั้นใช้ภาพลายเส้น"""
-    shot = find_photo(page["photo"])
-    if shot:
-        return (
-            f'<figure class="plate"><img src="{shot}" alt="{page["caption"]}">'
-            f'<figcaption><span class="no">Pl. {idx:02d}</span>'
-            f'<span class="tick"></span>'
-            f'<span class="ttl">{page["caption"]}</span></figcaption></figure>'
-        )
-    art_path = os.path.join(HERE, "art", page["art"])
-    with open(art_path, encoding="utf-8") as fh:
-        art = fh.read()
-    return art.replace(
-        "<svg ", f'<svg preserveAspectRatio="xMidYMid meet" style="max-width:{page["art_w"]}" ', 1
-    )
-
-
 MARKS = (
     '<div class="marks">'
     '<span class="h t l"></span><span class="h t r"></span>'
@@ -439,13 +372,87 @@ MARKS = (
 )
 
 
+def read_svg(folder, name):
+    with open(os.path.join(HERE, folder, name), encoding="utf-8") as fh:
+        return fh.read()
+
+
+def find_photo(stem):
+    """คืน path ของรูปถ่ายใน photos/ ถ้ามี (รองรับ .jpg .jpeg .png .webp)"""
+    for ext in (".jpg", ".jpeg", ".png", ".webp", ".JPG", ".PNG"):
+        rel = "photos/" + stem + ext
+        if os.path.exists(os.path.join(HERE, rel)):
+            return rel
+    return None
+
+
+def item_html(it):
+    name, price = it[0], it[1]
+    size = it[2] if len(it) > 2 else None
+    sz = f'<span class="sz">{size}</span>' if size else ""
+    return (
+        '<div class="item">'
+        f'<span class="n">{name}{sz}</span>'
+        f'<span class="p">{price}.-</span>'
+        "</div>"
+    )
+
+
+def section_html(icon, th, items):
+    return (
+        '<div class="sec">'
+        '<div class="sec-h">'
+        f'<span class="ico">{read_svg("icons", icon + ".svg")}</span>'
+        f'<span class="th">{th}</span>'
+        '<span class="rule"></span>'
+        "</div>"
+        + "".join(item_html(i) for i in items)
+        + "</div>"
+    )
+
+
+def photo_html(stem, fallback, cls="shot"):
+    shot = find_photo(stem)
+    if shot:
+        inner = f'<img src="{shot}" alt="">'
+    else:
+        inner = read_svg("art", fallback).replace(
+            "<svg ", '<svg preserveAspectRatio="xMidYMid meet" ', 1
+        )
+    return f'<figure class="{cls}">{inner}</figure>'
+
+
+def block_html(block):
+    if block[0] == "sec":
+        return section_html(block[1], block[2], block[4])
+    return photo_html(block[1], block[2])
+
+
+def head_html():
+    return f"""<header class="head">
+    <div class="mark">
+      <div class="th">เมนูอาหาร</div>
+      <div class="sub">อาหารบางเวลา</div>
+      <div class="tag">อร่อยได้…ในทุกช่วงเวลา</div>
+    </div>
+    <div class="script">{TAGLINE}</div>
+    <div class="corner">Good Food<br>Good Mood<i></i></div>
+  </header>"""
+
+
 def page_html(idx, page, total, bleed=False):
-    art = artwork_html(idx, page)
     dense = " dense" if page.get("dense") else ""
+    bands = page.get("bands") or []
+    if bands:
+        dense += " hasbands"
     cols = "".join(
-        f'<div class="col">{"".join(section_html(s) for s in col)}</div>'
+        f'<div class="col">{"".join(block_html(b) for b in col)}</div>'
         for col in page["cols"]
     )
+    if bands:
+        cols += ('<div class="bands">'
+                 + "".join(photo_html(b[1], b[2], "band") for b in bands)
+                 + "</div>")
     sheet_open, sheet_close = "", ""
     if bleed:
         slug = (
@@ -454,22 +461,19 @@ def page_html(idx, page, total, bleed=False):
         )
         sheet_open = f'<div class="sheet">{MARKS}{slug}'
         sheet_close = "</div>"
-    return sheet_open + f"""<section class="page">
-  <div class="frame"><span></span><span></span><span></span><span></span></div>
+    return (
+        sheet_open
+        + f"""<section class="page">
   {head_html()}
-  <div class="ptitle">
-    <div class="th">{page['title_th']}</div>
-    <div class="en">{page['title_en']}</div>
-  </div>
   <div class="body{dense}">{cols}</div>
-  <div class="art">{art}</div>
-  <div class="tail"><i></i><b></b><i></i></div>
   <footer class="foot">
-    <span>Bangwela · บางเวลา</span>
-    <span class="mid">ราคาเป็นเงินบาท</span>
-    <span class="no">{idx:02d} / {total:02d}</span>
+    <div class="closing">{CLOSING}</div>
+    <div class="meta"><b>{page['label']}</b>
+      <span class="no">{idx:02d} / {total:02d}</span> · ราคาเป็นเงินบาท</div>
   </footer>
-</section>""" + sheet_close
+</section>"""
+        + sheet_close
+    )
 
 
 def build_html(bleed=False):
@@ -500,7 +504,7 @@ def build_pdf(html_path, pdf_path, size=("297mm", "420mm")):
         )
         page = browser.new_page()
         page.goto("file://" + html_path)
-        page.wait_for_timeout(1200)
+        page.wait_for_timeout(1400)
         page.pdf(
             path=pdf_path,
             width=size[0],
@@ -523,6 +527,15 @@ def to_cmyk(src, dst):
     )
 
 
+def photo_slots():
+    out = []
+    for p in PAGES:
+        for col in p["cols"]:
+            out += [b[1] for b in col if b[0] == "photo"]
+        out += [b[1] for b in (p.get("bands") or [])]
+    return out
+
+
 if __name__ == "__main__":
     bleed = "--bleed" in sys.argv
     stem = "bangwela-menu-print" if bleed else "bangwela-menu"
@@ -530,11 +543,15 @@ if __name__ == "__main__":
     with open(html_path, "w", encoding="utf-8") as fh:
         fh.write(build_html(bleed))
     print("wrote", html_path)
-    missing = [p["photo"] for p in PAGES if not find_photo(p["photo"])]
+
+    slots = photo_slots()
+    missing = [s for s in slots if not find_photo(s)]
     if missing:
-        print("ยังไม่มีรูปถ่ายใน photos/ (ใช้ภาพลายเส้นแทน):", ", ".join(missing))
+        print(f"รูปถ่าย {len(slots) - len(missing)}/{len(slots)} ช่อง — ยังไม่มี: "
+              + ", ".join(missing) + " (ใช้ภาพลายเส้นแทน)")
     else:
-        print("ใช้รูปถ่ายจริงครบทั้ง 5 หน้า")
+        print(f"ใช้รูปถ่ายจริงครบทั้ง {len(slots)} ช่อง")
+
     if "--pdf" in sys.argv:
         pdf_path = os.path.join(HERE, stem + ".pdf")
         size = ("317mm", "440mm") if bleed else ("297mm", "420mm")

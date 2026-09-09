@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 280" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="ch"><path d="M0 0c14 3 24 16 28 33 3 13 2 26-1 36-3-11-9-24-17-35C1 22-8-2 0 0Z"/><path d="M0 0-9-13m-7 4 15 9"/></g><g id="pr"><path d="M44 6C18 4 2 22 2 44c0 26 20 44 46 44-14-12-22-26-22-44 0-16 6-30 18-38Z"/><g stroke-width="1.7" opacity=".75"><path d="M8 24c6 6 12 8 20 8M2 46c10 2 18 2 24 0M10 66c8-4 14-6 20-8"/></g><path d="M48 88c11 14 23 18 31 12-4-10-4-18 0-26-13-4-25 2-31 14Z"/><path d="M44 6 70-6" stroke-width="2"/><g stroke-width="1.6" opacity=".7"><path d="M47 2c14-10 29-12 40-8M49 12c16-5 31-3 42 3M30 34l11-7M28 46h13M30 58l11 7"/></g><circle cx="39" cy="15" r="3.4" fill="currentColor" stroke="none"/></g></defs>
+  <g stroke-width="1.9" opacity=".82"><path d="M134 121C154 90 184 94 204 119  M134 161C154 129 186 134 206 159  M138 166C160 130 195 135 217 167  M155 133C170 97 193 103 207 139  M172 136C198 96 240 102 267 132  M188 142C204 122 228 125 244 147  M205 169C221 145 246 148 262 168  M222 143C241 106 271 112 291 139  M238 146C258 113 290 118 310 148  M255 125C282 85 324 91 326 120  M272 155C289 131 317 134 326 160  M288 125C312 97 349 101 326 125  M305 171C331 134 373 140 326 174  M322 118C347 88 388 93 326 117  M326 129C340 96 363 101 326 130  M326 119C341 92 364 96 326 113"/></g>
+  <g stroke-width="2.1" opacity=".92"><use href="#pr" transform="translate(196 74) rotate(8) scale(.62)"/></g>
+  <g stroke-width="2" opacity=".85">
+    <circle cx="156" cy="166" r="6.5"/><circle cx="156" cy="166" r="2.8"/>
+    <circle cx="302" cy="158" r="6"/><circle cx="302" cy="158" r="2.6"/>
+    <path d="M128 170c9-10 22-10 30 1-10 9-23 8-30-1Z"/>
+    <path d="M300 132c14-12 33-12 43 1-12 12-31 12-43-1Z"/>
+    <path d="M244 176c11-9 26-9 36 0-10 10-25 10-36 0Z"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="230" cy="186" rx="186" ry="58"/>
+    <ellipse cx="230" cy="186" rx="168" ry="47" stroke-width="1.6" opacity=".5"/>
+  </g>
+  <g stroke-width="2.1" opacity=".8"><use href="#ch" transform="translate(56 208) rotate(-16)"/><use href="#ch" transform="translate(392 210) rotate(24) scale(.85)"/></g>
+</svg>

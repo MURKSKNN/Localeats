@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 280" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <defs><g id="lm"><g><circle r="19"/><circle r="13"/><path d="M0-13v26M-13 0h26M-9-9 9 9M9-9-9 9" opacity=".8"/></g></g>
+    <g id="slice"><path d="M0 0c-8-16 6-28 30-30 26-2 54 3 66 14 10 10-2 24-26 27-30 4-62 2-70-11Z"/>
+      <g stroke-width="1.7" opacity=".68"><path d="M14-18c16 11 38 16 60 16M22-25c15 11 36 15 57 15M8-10c16 11 36 14 58 14"/></g></g>
+  </defs>
+  <g stroke-width="2.3">
+    <use href="#slice" transform="translate(122 176) rotate(-7)"/>
+    <use href="#slice" transform="translate(150 150) rotate(-4)"/>
+    <use href="#slice" transform="translate(178 124) rotate(-2)"/>
+  </g>
+  <g stroke-width="2.2" opacity=".9">
+    <path d="M328 168c22-20 52-20 74 0-20 20-52 20-74 0Z"/>
+    <path d="M328 168c-6 26 8 50 34 58 4-26-8-48-34-58Z"/>
+    <path d="M366 134c-24-10-50 0-58 22 24 8 48-2 58-22Z"/>
+    <use href="#lm" transform="translate(414 192) scale(.76)"/>
+  </g>
+  <g stroke-width="2.9">
+    <ellipse cx="240" cy="186" rx="198" ry="60"/>
+    <ellipse cx="240" cy="186" rx="178" ry="49" stroke-width="1.6" opacity=".5"/>
+  </g>
+</svg>
